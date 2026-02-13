@@ -39,12 +39,6 @@ export default function ScanQRPage() {
         } else {
             setLocError("เบราว์เซอร์ของคุณไม่รองรับการดึงตำแหน่ง (GPS)");
         }
-
-        return () => {
-            if (scannerRef.current) {
-                scannerRef.current.stop().catch(console.error);
-            }
-        };
     }, []);
 
     const startScanner = async () => {
@@ -61,35 +55,61 @@ export default function ScanQRPage() {
 
         setScanning(true);
         setResult(null);
+    };
 
-        try {
-            const html5QrCode = new Html5Qrcode(qrRegionId);
-            scannerRef.current = html5QrCode;
-
-            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-
-            await html5QrCode.start(
-                { facingMode: "environment" },
-                config,
-                (decodedText) => {
-                    handleScanSuccess(decodedText);
-                    html5QrCode.stop().then(() => setScanning(false)).catch(console.error);
-                },
-                (errorMessage) => {
-                    // console.log(errorMessage);
-                }
-            );
-        } catch (err: any) {
-            console.error(err);
-            setScanning(false);
-            const errorMsg = err?.message || err || "โปรดตรวจสอบสิทธิ์การเข้าถึงกล้องและ HTTPS";
-            toast({
-                title: "ข้อผิดพลาดกล้อง",
-                description: `ไม่สามารถเข้าถึงกล้องได้: ${errorMsg}`,
-                variant: "destructive"
-            });
+    const stopScanner = async () => {
+        if (scannerRef.current) {
+            try {
+                await scannerRef.current.stop();
+                scannerRef.current = null;
+                setScanning(false);
+            } catch (err) {
+                console.error("Failed to stop scanner", err);
+            }
         }
     };
+
+    useEffect(() => {
+        if (scanning && !scannerRef.current) {
+            // Wait for next tick to ensure DOM element with id is rendered
+            const timer = setTimeout(async () => {
+                try {
+                    const html5QrCode = new Html5Qrcode(qrRegionId);
+                    scannerRef.current = html5QrCode;
+
+                    const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+                    await html5QrCode.start(
+                        { facingMode: "environment" },
+                        config,
+                        (decodedText) => {
+                            handleScanSuccess(decodedText);
+                            stopScanner();
+                        },
+                        (errorMessage) => {
+                            // console.log(errorMessage);
+                        }
+                    );
+                } catch (err: any) {
+                    console.error("Scanner start error:", err);
+                    setScanning(false);
+                    const errorMsg = err?.message || err || "โปรดตรวจสอบสิทธิ์การเข้าถึงกล้องและ HTTPS";
+                    toast({
+                        title: "ข้อผิดพลาดกล้อง",
+                        description: `ไม่สามารถเข้าถึงกล้องได้: ${errorMsg}`,
+                        variant: "destructive"
+                    });
+                }
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+        // Cleanup for this specific useEffect when scanning becomes false or component unmounts
+        return () => {
+            if (scannerRef.current && !scanning) { // Only stop if scanning was true and now it's false
+                stopScanner();
+            }
+        };
+    }, [scanning]);
 
     const handleScanSuccess = async (token: string) => {
         setLoading(true);
@@ -224,11 +244,7 @@ export default function ScanQRPage() {
                             <Button
                                 variant="secondary"
                                 className="absolute bottom-4 left-1/2 -translate-x-1/2 opacity-80"
-                                onClick={() => {
-                                    if (scannerRef.current) {
-                                        scannerRef.current.stop().then(() => setScanning(false)).catch(console.error);
-                                    }
-                                }}
+                                onClick={stopScanner}
                             >
                                 ยกเลิก
                             </Button>
