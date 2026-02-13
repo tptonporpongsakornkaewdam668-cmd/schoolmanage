@@ -79,10 +79,15 @@ export default function ScanQRPage() {
                     // console.log(errorMessage);
                 }
             );
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
             setScanning(false);
-            toast({ title: "ข้อผิดพลาดกล้อง", description: "ไม่สามารถเข้าถึงกล้องได้", variant: "destructive" });
+            const errorMsg = err?.message || err || "โปรดตรวจสอบสิทธิ์การเข้าถึงกล้องและ HTTPS";
+            toast({
+                title: "ข้อผิดพลาดกล้อง",
+                description: `ไม่สามารถเข้าถึงกล้องได้: ${errorMsg}`,
+                variant: "destructive"
+            });
         }
     };
 

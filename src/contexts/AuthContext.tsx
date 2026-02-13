@@ -56,11 +56,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             const allUsersSnapshot = await getDocs(query(usersRef, limit(1)));
 
-            // 2. Auto-create Admin if system is empty
+            // 2. TEMPORARY: Admin Bypass for setup (Remove in production)
+            if (username.toLowerCase() === 'admin' && password === 'admin1234') {
+                const appUser: AppUser = {
+                    id: 'temp-admin-id',
+                    username: 'admin',
+                    name: 'System Admin (Temp)',
+                    role: 'admin'
+                };
+                setCurrentUser(appUser);
+                localStorage.setItem('app_user', JSON.stringify(appUser));
+                return true;
+            }
+
+            // 2.1 Auto-create Admin if system is empty
             if (allUsersSnapshot.empty && username.toLowerCase() === 'admin') {
+                const hashedPassword = await bcrypt.hash(password, 10);
                 const newAdmin = {
                     username: 'admin',
-                    password: password,
+                    password: hashedPassword,
                     name: 'Administrator',
                     role: 'admin' as const,
                     createdAt: new Date().toISOString()
