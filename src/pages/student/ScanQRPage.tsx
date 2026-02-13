@@ -159,7 +159,9 @@ export default function ScanQRPage() {
 
             const studentData = studentSnap.data();
 
-            if (studentData.classroomId !== sessionData.classroomId) {
+            // Check if student belongs to one of the classrooms allowed in this session
+            const allowedClassrooms = sessionData.classrooms || [];
+            if (!allowedClassrooms.includes(studentData.classroomId)) {
                 setResult({ success: false, message: "คุณไม่ได้อยู่ในกลุ่มเป้าหมายของ QR Code นี้" });
                 setLoading(false);
                 return;
@@ -186,7 +188,7 @@ export default function ScanQRPage() {
             await addDoc(attendanceRef, {
                 studentId: currentUser!.studentId,
                 subjectId: sessionData.subjectId,
-                classroomId: sessionData.classroomId,
+                classroomId: studentData.classroomId,
                 date: sessionData.date,
                 period: sessionData.period,
                 status: 'present',

@@ -174,13 +174,11 @@ export interface AttendanceRecord {
 
 export interface QRSession {
     id: string;
-    termId: string;
     subjectId: string;
-    classroomId: string;
+    classrooms: string[]; // Subject can have multiple classrooms
     date: string;
     period: number;
-    token: string;
     expiresAt: string;
-    durationSeconds: number;
     isActive: boolean;
+    createdAt: string;
 }
