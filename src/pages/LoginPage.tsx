@@ -7,9 +7,17 @@ import { Loader2, GraduationCap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { getSystemSettings } from '@/lib/services';
+import { SystemSettings } from '@/lib/types';
+import { useEffect } from 'react';
 
 export default function LoginPage() {
+    const [settings, setSettings] = useState<SystemSettings | null>(null);
     const [username, setUsername] = useState('');
+
+    useEffect(() => {
+        getSystemSettings().then(setSettings);
+    }, []);
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -53,12 +61,18 @@ export default function LoginPage() {
             <Card className="w-full max-w-md shadow-lg border-0 bg-white/90 backdrop-blur-sm">
                 <CardHeader className="space-y-2 text-center pb-6">
                     <div className="flex justify-center mb-2">
-                        <div className="rounded-full bg-primary/10 p-4 ring-1 ring-primary/20">
-                            <GraduationCap className="h-10 w-10 text-primary" />
+                        <div className="rounded-full bg-primary/10 p-4 ring-1 ring-primary/20 flex items-center justify-center overflow-hidden w-20 h-20">
+                            {settings?.logoUrl ? (
+                                <img src={settings.logoUrl} alt="Logo" className="w-full h-full object-contain" />
+                            ) : (
+                                <GraduationCap className="h-10 w-10 text-primary" />
+                            )}
                         </div>
                     </div>
-                    <CardTitle className="text-2xl font-bold tracking-tight text-primary">Class Companion</CardTitle>
-                    <CardDescription className="text-base">เข้าสู่ระบบเพื่อจัดการชั้นเรียนของคุณ</CardDescription>
+                    <CardTitle className="text-2xl font-bold tracking-tight text-primary">
+                        {settings?.schoolName || 'Class Companion'}
+                    </CardTitle>
+                    <CardDescription className="text-base text-muted-foreground font-medium">เข้าสู่ระบบเพื่อจัดการชั้นเรียนของคุณ</CardDescription>
                 </CardHeader>
                 <form onSubmit={handleLogin}>
                     <CardContent className="space-y-4">
@@ -109,7 +123,7 @@ export default function LoginPage() {
             </Card>
 
             <div className="fixed bottom-4 text-center w-full text-xs text-muted-foreground">
-                © {new Date().getFullYear()} Class Companion. All rights reserved.
+                © {new Date().getFullYear()} {settings?.schoolName || 'Class Companion'}. All rights reserved.
             </div>
         </div>
     );

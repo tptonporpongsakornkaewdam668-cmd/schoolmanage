@@ -10,6 +10,8 @@ import FingerprintJS from '@fingerprintjs/fingerprintjs';
 import { collection, query, where, getDocs, getDoc, addDoc, updateDoc, doc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useNavigate } from 'react-router-dom';
+import { getClassrooms } from '@/lib/services';
+import { Classroom } from '@/lib/types';
 
 export default function ScanQRPage() {
     const { currentUser } = useAuth();
@@ -179,14 +181,25 @@ export default function ScanQRPage() {
             const attendSnap = await getDocs(qAttend);
 
             if (!attendSnap.empty) {
-                setResult({ success: false, message: "คุณได้รับการเช็คชื่อในคาบนี้ไปแล้ว" });
+                const existing = attendSnap.docs[0].data();
+                const allClassrooms = await getClassrooms(activeTerm!.id);
+                const room = allClassrooms.find(c => c.id === existing.classroomId)?.name || 'ไม่ทราบห้อง';
+
+                setResult({
+                    success: false,
+                    message: `คุณได้รับการเช็คชื่อในคาบนี้ไปแล้วเมื่อวันที่ ${new Date(existing.date).toLocaleDateString('th-TH')} เวลา ${existing.checkInTime || 'N/A'} (ห้อง ${room})`
+                });
                 setLoading(false);
                 return;
             }
 
             // 6. Record Attendance
+            const allClassrooms = await getClassrooms(activeTerm!.id);
+            const roomName = allClassrooms.find(c => c.id === studentData.classroomId)?.name || 'ไม่ทราบห้อง';
+
             await addDoc(attendanceRef, {
                 studentId: currentUser!.studentId,
+                studentName: studentData.fullName,
                 subjectId: sessionData.subjectId,
                 classroomId: studentData.classroomId,
                 date: sessionData.date,
@@ -194,14 +207,14 @@ export default function ScanQRPage() {
                 status: 'present',
                 termId: activeTerm!.id,
                 checkInTime: now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
-                location: location,
+                location: location ? { latitude: location.lat, longitude: location.lng } : undefined,
                 fingerprint: fingerprint,
                 createdAt: now.toISOString()
             });
 
             setResult({
                 success: true,
-                message: "เช็คชื่อสำเร็จ!"
+                message: `เช็คชื่อสำเร็จ! ประจำวันที่ ${now.toLocaleDateString('th-TH')} คาบที่ ${sessionData.period} (ห้อง ${roomName})`
             });
 
         } catch (err) {

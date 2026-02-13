@@ -5,9 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTerm } from '@/lib/termContext';
-import { getSubjects, getAttendanceRecords } from '@/lib/services';
-import { Subject, AttendanceRecord, STATUS_CONFIG, AttendanceStatus } from '@/lib/types';
-import { Search, Filter, Calendar as MapPin, Loader2, Download } from 'lucide-react';
+import { getSubjects, getAttendanceRecords, getClassrooms } from '@/lib/services';
+import { Subject, AttendanceRecord, STATUS_CONFIG, AttendanceStatus, Classroom } from '@/lib/types';
+import { Search, Filter, Calendar as MapPin, Loader2, Download, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function AttendanceHistoryPage() {
@@ -16,6 +16,7 @@ export default function AttendanceHistoryPage() {
     const [loading, setLoading] = useState(true);
     const [records, setRecords] = useState<AttendanceRecord[]>([]);
     const [subjects, setSubjects] = useState<Subject[]>([]);
+    const [classrooms, setClassrooms] = useState<Classroom[]>([]);
     const [filteredRecords, setFilteredRecords] = useState<AttendanceRecord[]>([]);
 
     // Filters
@@ -37,12 +38,14 @@ export default function AttendanceHistoryPage() {
     async function loadData() {
         setLoading(true);
         try {
-            const [allAttendance, allSubjects] = await Promise.all([
+            const [allAttendance, allSubjects, allClassrooms] = await Promise.all([
                 getAttendanceRecords(activeTerm!.id, { studentId: currentUser!.studentId }),
-                getSubjects(activeTerm!.id)
+                getSubjects(activeTerm!.id),
+                getClassrooms(activeTerm!.id)
             ]);
             setRecords(allAttendance.sort((a, b) => b.date.localeCompare(a.date)));
             setSubjects(allSubjects);
+            setClassrooms(allClassrooms);
         } catch (error) {
             console.error("Failed to load history", error);
         } finally {
@@ -158,12 +161,17 @@ export default function AttendanceHistoryPage() {
                                             </div>
                                             <div>
                                                 <p className="font-bold">{subject?.name || 'Unknown'}</p>
-                                                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                                                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mt-0.5">
                                                     <span>{new Date(record.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                                                     <span>•</span>
                                                     <span>คาบที่ {record.period}</span>
                                                     <span>•</span>
-                                                    <span>{record.checkInTime || 'เช็คโดยครู'}</span>
+                                                    <span className="flex items-center gap-1">
+                                                        <GraduationCap className="h-3 w-3" />
+                                                        ห้อง {classrooms.find(c => c.id === record.classroomId)?.name || 'N/A'}
+                                                    </span>
+                                                    <span>•</span>
+                                                    <span className="text-primary/70">{record.checkInTime || 'เช็คโดยครู'}</span>
                                                 </div>
                                                 {record.location && (
                                                     <div className="flex items-center gap-1 text-[10px] text-blue-500 mt-1">

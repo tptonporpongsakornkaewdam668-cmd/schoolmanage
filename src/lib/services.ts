@@ -1,6 +1,6 @@
 import { db } from './firebase';
 import { collection, getDocs, doc, getDoc, query, where, addDoc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
-import { Student, Classroom, Subject, TimetableEntry, AttendanceSummary, AttendanceStatus, AcademicYear, PeriodConfig, Term, Assignment, StudentScore, AttendanceRecord, QRSession } from './types';
+import { Student, Classroom, Subject, TimetableEntry, AttendanceSummary, AttendanceStatus, AcademicYear, PeriodConfig, Term, Assignment, StudentScore, AttendanceRecord, QRSession, SystemSettings, AppUser } from './types';
 
 // Collection references
 const studentsRef = collection(db, 'students');
@@ -13,6 +13,8 @@ const periodConfigsRef = collection(db, 'period_configs');
 const termsRef = collection(db, 'terms');
 const assignmentsRef = collection(db, 'assignments');
 const scoresRef = collection(db, 'scores');
+const usersRef = collection(db, 'users');
+const settingsRef = collection(db, 'settings');
 
 // Students
 export const getStudentById = async (id: string): Promise<Student | null> => {
@@ -947,3 +949,51 @@ export const deactivateQRSessions = async (subjectId: string, date: string, peri
     const promises = snap.docs.map(d => updateDoc(doc(db, 'qr_sessions', d.id), { isActive: false }));
     await Promise.all(promises);
 };
+
+// System Settings
+export const getSystemSettings = async (): Promise<SystemSettings | null> => {
+    const docRef = doc(db, 'settings', 'global');
+    const snap = await getDoc(docRef);
+    if (!snap.exists()) return null;
+    return snap.data() as SystemSettings;
+};
+
+export const saveSystemSettings = async (settings: SystemSettings) => {
+    const docRef = doc(db, 'settings', 'global');
+    await updateDoc(docRef, settings as any).catch(async (err) => {
+        if (err.code === 'not-found') {
+            const { setDoc } = await import('firebase/firestore');
+            await setDoc(docRef, settings);
+        } else {
+            throw err;
+        }
+    });
+};
+
+// User Management
+export const getAllUsers = async (): Promise<AppUser[]> => {
+    const snapshot = await getDocs(usersRef);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as any } as AppUser));
+};
+
+export const getAdmins = async (): Promise<AppUser[]> => {
+    const q = query(usersRef, where('role', '==', 'admin'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as any } as AppUser));
+};
+
+export const addUser = async (user: Omit<AppUser, 'id'> & { password?: string }) => {
+    const userData = { ...user, createdAt: new Date().toISOString() };
+    if (userData.password) {
+        userData.password = await bcrypt.hash(userData.password, 10);
+    }
+    return await addDoc(usersRef, userData);
+};
+
+export const deleteUser = async (id: string) => {
+    const docRef = doc(db, 'users', id);
+    return await deleteDoc(docRef);
+};
+
+import bcrypt from 'bcryptjs';
+import { setDoc } from 'firebase/firestore';

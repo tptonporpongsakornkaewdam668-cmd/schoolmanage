@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { getSystemSettings } from '@/lib/services';
+import { SystemSettings } from '@/lib/types';
 import {
   LayoutDashboard,
   ClipboardCheck,
@@ -16,7 +18,8 @@ import { cn } from '@/lib/utils';
 import { TermSelector } from './TermSelector';
 import { AcademicManagementDialog } from './AcademicManagementDialog';
 
-import { useAuth, AppUser } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { AppUser } from '@/lib/types';
 import {
   Plus,
   LogOut,
@@ -56,7 +59,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const { currentUser, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [settings, setSettings] = useState<SystemSettings | null>(null);
   const location = useLocation();
+
+  useEffect(() => {
+    getSystemSettings().then(setSettings);
+  }, []);
 
   const navItems = currentUser?.role === 'student' ? studentNavItems : teacherNavItems;
 
@@ -84,13 +92,17 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       >
         {/* Logo */}
         <div className="flex h-16 items-center gap-3 px-4">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary">
-            <GraduationCap className="h-5 w-5 text-sidebar-primary-foreground" />
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary overflow-hidden">
+            {settings?.logoUrl ? (
+              <img src={settings.logoUrl} alt="Logo" className="w-full h-full object-contain" />
+            ) : (
+              <GraduationCap className="h-5 w-5 text-sidebar-primary-foreground" />
+            )}
           </div>
           {!collapsed && (
             <div className="overflow-hidden">
               <h1 className="truncate text-sm font-bold text-sidebar-primary">
-                Class Companion
+                {settings?.schoolName || 'Class Companion'}
               </h1>
               <p className="truncate text-xs text-sidebar-foreground/60">
                 {currentUser?.role === 'student' ? 'Student Portal' : 'Teacher Portal'}

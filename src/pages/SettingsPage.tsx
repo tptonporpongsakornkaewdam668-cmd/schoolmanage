@@ -8,15 +8,27 @@ import { Trash, Plus, Save, Loader2, Calendar as CalendarIcon } from 'lucide-rea
 import { useToast } from "@/hooks/use-toast";
 import {
   getPeriodConfigs, savePeriodConfigs,
-  getGradeConfigs, saveGradeConfigs
+  getGradeConfigs, saveGradeConfigs,
+  getSystemSettings, saveSystemSettings,
+  getAdmins, addUser, deleteUser
 } from '@/lib/services';
-import { PeriodConfig, GradeConfig } from '@/lib/types';
+import { PeriodConfig, GradeConfig, SystemSettings, AppUser } from '@/lib/types';
+import { Globe, UserPlus, Shield } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 export default function SettingsPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [periodConfigs, setPeriodConfigs] = useState<PeriodConfig[]>([]);
   const [gradeConfigs, setGradeConfigs] = useState<GradeConfig[]>([]);
+  const [systemSettings, setSystemSettings] = useState<SystemSettings>({
+    schoolName: 'School Companion',
+    logoUrl: 'https://placehold.co/200x200?text=LOGO'
+  });
+  const [admins, setAdmins] = useState<AppUser[]>([]);
+  const [newAdmin, setNewAdmin] = useState({ name: '', username: '', password: '' });
+  const [savingSettings, setSavingSettings] = useState(false);
+  const [addingAdmin, setAddingAdmin] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -25,10 +37,15 @@ export default function SettingsPage() {
   async function loadData() {
     setLoading(true);
     try {
-      const [periods, grades] = await Promise.all([
+      const [periods, grades, settings, adminList] = await Promise.all([
         getPeriodConfigs(),
-        getGradeConfigs()
+        getGradeConfigs(),
+        getSystemSettings(),
+        getAdmins()
       ]);
+
+      if (settings) setSystemSettings(settings);
+      setAdmins(adminList);
 
       // Default period config if empty
       if (periods.length === 0) {
@@ -126,9 +143,10 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="timetable" className="space-y-4">
-        <TabsList>
+        <TabsList className="grid grid-cols-3 w-full lg:w-[600px]">
           <TabsTrigger value="timetable">เวลาเรียน (Timetable)</TabsTrigger>
           <TabsTrigger value="grading">เกณฑ์การตัดเกรด (Grading)</TabsTrigger>
+          <TabsTrigger value="website">จัดการเว็บไซต์ (Website)</TabsTrigger>
         </TabsList>
 
         <TabsContent value="timetable" className="space-y-4">
@@ -221,6 +239,159 @@ export default function SettingsPage() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="website" className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Globe className="h-5 w-5" /> ข้อมูลทั่วไปของเว็บไซต์
+                </CardTitle>
+                <CardDescription>จัดการโลโก้และชื่อที่จะแสดงในหน้าต่างระดับสูง</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>ชื่อโรงเรียน / ระบบ</Label>
+                  <Input
+                    value={systemSettings.schoolName}
+                    onChange={(e) => setSystemSettings({ ...systemSettings, schoolName: e.target.value })}
+                    placeholder="เช่น โรงเรียนสาธิต..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>ลิงก์ Logo (URL)</Label>
+                  <div className="flex gap-4">
+                    <Input
+                      value={systemSettings.logoUrl}
+                      onChange={(e) => setSystemSettings({ ...systemSettings, logoUrl: e.target.value })}
+                      placeholder="https://..."
+                    />
+                    <div className="w-12 h-12 border rounded bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                      {systemSettings.logoUrl && <img src={systemSettings.logoUrl} alt="Preview" className="w-full h-full object-contain" />}
+                    </div>
+                  </div>
+                </div>
+                <Button
+                  className="w-full"
+                  onClick={async () => {
+                    setSavingSettings(true);
+                    try {
+                      await saveSystemSettings(systemSettings);
+                      toast({ title: "บันทึกข้อมูลเรียบร้อย" });
+                    } catch (e) {
+                      toast({ title: "บันทึกไม่สำเร็จ", variant: "destructive" });
+                    } finally {
+                      setSavingSettings(false);
+                    }
+                  }}
+                  disabled={savingSettings}
+                >
+                  {savingSettings ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : <Save className="mr-2 h-4 w-4" />}
+                  บันทึกข้อมูลเว็บไซต์
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" /> จัดการแอดมิน (Admins)
+                </CardTitle>
+                <CardDescription>เพิ่มหรือลบบัญชีผู้ดูแลระบบ</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 gap-3 p-3 border rounded-lg bg-muted/30">
+                  <Label className="text-xs font-bold text-muted-foreground uppercase">เพิ่มแอดมินใหม่</Label>
+                  <Input
+                    placeholder="ชื่อ-นามสกุล"
+                    value={newAdmin.name}
+                    onChange={(e) => setNewAdmin({ ...newAdmin, name: e.target.value })}
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      placeholder="Username"
+                      value={newAdmin.username}
+                      onChange={(e) => setNewAdmin({ ...newAdmin, username: e.target.value })}
+                    />
+                    <Input
+                      type="password"
+                      placeholder="Password"
+                      value={newAdmin.password}
+                      onChange={(e) => setNewAdmin({ ...newAdmin, password: e.target.value })}
+                    />
+                  </div>
+                  <Button
+                    variant="secondary"
+                    onClick={async () => {
+                      if (!newAdmin.name || !newAdmin.username || !newAdmin.password) return;
+                      setAddingAdmin(true);
+                      try {
+                        await addUser({
+                          name: newAdmin.name,
+                          username: newAdmin.username,
+                          role: 'admin',
+                          password: newAdmin.password
+                        } as any);
+                        toast({ title: "เพิ่มแอดมินเรียบร้อย" });
+                        setNewAdmin({ name: '', username: '', password: '' });
+                        const updated = await getAdmins();
+                        setAdmins(updated);
+                      } catch (e) {
+                        toast({ title: "เพิ่มไม่สำเร็จ", variant: "destructive" });
+                      } finally {
+                        setAddingAdmin(false);
+                      }
+                    }}
+                    disabled={addingAdmin}
+                  >
+                    {addingAdmin ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <UserPlus className="h-4 w-4 mr-2" />}
+                    เพิ่มแอดมิน
+                  </Button>
+                </div>
+
+                <div className="border rounded-md">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ชื่อ</TableHead>
+                        <TableHead>Username</TableHead>
+                        <TableHead className="text-right">จัดการ</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {admins.map((admin) => (
+                        <TableRow key={admin.id}>
+                          <TableCell className="font-medium text-xs">{admin.name}</TableCell>
+                          <TableCell className="text-xs">{admin.username}</TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-destructive"
+                              onClick={async () => {
+                                if (admin.username === 'admin') {
+                                  toast({ title: "ไม่สามารถลบ admin หลักได้", variant: "destructive" });
+                                  return;
+                                }
+                                if (confirm(`ต้องการลบแอดมิน ${admin.name} ใช่หรือไม่?`)) {
+                                  await deleteUser(admin.id);
+                                  setAdmins(admins.filter(a => a.id !== admin.id));
+                                  toast({ title: 'ลบเรียบร้อย' });
+                                }
+                              }}
+                            >
+                              <Trash className="h-3.5 w-3.5" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

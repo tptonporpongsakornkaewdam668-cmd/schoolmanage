@@ -2,16 +2,10 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, limit, addDoc } from 'firebase/firestore';
 import bcrypt from 'bcryptjs';
+import { AppUser } from '@/lib/types';
 
 // Define User Type for our Custom Auth
-export interface AppUser {
-    id: string;
-    username: string;
-    name: string;
-    role: 'admin' | 'teacher' | 'student';
-    studentId?: string; // Linked ID if student
-    mustChangePassword?: boolean;
-}
+
 
 interface AuthContextType {
     currentUser: AppUser | null;

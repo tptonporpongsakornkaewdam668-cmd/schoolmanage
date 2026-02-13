@@ -9,7 +9,7 @@ import { getAttendanceRecords, getSubjects, getClassrooms, getStudents, updateAt
 import { AttendanceRecord, Subject, Classroom, Student, AttendanceStatus, STATUS_CONFIG } from '@/lib/types';
 import { format as formatDate, parseISO } from 'date-fns';
 import { th } from 'date-fns/locale';
-import { Loader2, Save, PenLine, Filter, X, Eye, ArrowUpDown, Trash, Download } from 'lucide-react';
+import { Loader2, Save, PenLine, Filter, X, Eye, ArrowUpDown, Trash, Download, MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -273,10 +273,13 @@ export default function ReportsPage() {
 
     } else {
       // --- Export List View ---
-      const headers = ['วันที่', 'รหัสนักเรียน', 'ชื่อ-สกุล', 'วิชา', 'ห้องเรียน', 'สถานะ', 'หมายเหตุ'].join(',');
+      const headers = ['วันที่', 'รหัสนักเรียน', 'ชื่อ-สกุล', 'วิชา', 'ห้องเรียน', 'สถานะ', 'หมายเหตุ', 'พิกัด GPS'].join(',');
       csvContent += "\uFEFF" + headers + "\n";
 
       filteredAttendanceList.forEach(record => {
+        const lat = record.location?.latitude ?? (record.location as any)?.lat;
+        const lng = record.location?.longitude ?? (record.location as any)?.lng;
+        const locationStr = lat !== undefined && lng !== undefined ? `${lat},${lng}` : '';
         const row = [
           `"${formatDisplayDate(record.date)}"`,
           `"${getStudentCode(record.studentId)}"`,
@@ -284,7 +287,8 @@ export default function ReportsPage() {
           `"${getSubjectName(record.subjectId)}"`,
           `"${getClassroomName(record.classroomId)}"`,
           `"${getStatusInfo(record.status).label}"`,
-          `"${record.note || ''}"`
+          `"${record.note || ''}"`,
+          `"${locationStr}"`
         ];
         csvContent += row.join(',') + "\n";
       });
@@ -467,14 +471,22 @@ export default function ReportsPage() {
                                         <TooltipProvider>
                                           <Tooltip>
                                             <TooltipTrigger asChild>
-                                              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${statusInfo.bgClass} cursor-default`}>
+                                              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${statusInfo.bgClass} cursor-default relative group`}>
                                                 <span className={`${statusInfo.color.replace('bg-', 'text-')} font-bold text-xs`}>
                                                   {statusInfo.icon}
                                                 </span>
+                                                {dayRecords.some(r => r.location || (r as any).lat) && (
+                                                  <div className="absolute -top-1 -right-1">
+                                                    <MapPin className="h-2.5 w-2.5 text-blue-500 fill-blue-500" />
+                                                  </div>
+                                                )}
                                               </div>
                                             </TooltipTrigger>
                                             <TooltipContent>
                                               <p>{statusInfo.label} ({dayRecords.length} คาบ)</p>
+                                              {dayRecords.some(r => r.location || (r as any).lat) && (
+                                                <p className="text-[10px] text-blue-600 font-medium">✓ มีข้อมูลพิกัด GPS</p>
+                                              )}
                                               {notePreview && <p className="text-xs text-muted-foreground mt-1 max-w-[200px] break-words">หมายเหตุ: {notePreview}</p>}
                                             </TooltipContent>
                                           </Tooltip>
@@ -523,6 +535,7 @@ export default function ReportsPage() {
                         <TableHead>ห้อง</TableHead>
                         <TableHead className="w-[120px]">สถานะ</TableHead>
                         <TableHead>หมายเหตุ</TableHead>
+                        <TableHead>พิกัด (GPS)</TableHead>
                         <TableHead className="text-right w-[100px]">จัดการ</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -576,6 +589,20 @@ export default function ReportsPage() {
                             </TableCell>
                             <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate" title={record.note}>
                               {record.note || '-'}
+                            </TableCell>
+                            <TableCell className="text-[10px] py-1 font-mono leading-tight">
+                              {record.location ? (
+                                <div className="flex flex-col text-blue-700 bg-blue-50/50 p-1.5 rounded-md border border-blue-100">
+                                  <div className="flex items-center gap-1 font-bold mb-1">
+                                    <MapPin className="h-3 w-3" />
+                                    <span>GPS</span>
+                                  </div>
+                                  <span>L: {record.location.latitude ?? (record.location as any).lat}</span>
+                                  <span>G: {record.location.longitude ?? (record.location as any).lng}</span>
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
                             </TableCell>
                             <TableCell className="text-right">
                               {isEditing ? (

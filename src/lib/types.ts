@@ -1,5 +1,21 @@
 export type AttendanceStatus = 'present' | 'late' | 'absent' | 'leave' | 'sick' | 'activity' | 'online';
 
+export interface AppUser {
+    id: string;
+    username: string;
+    name: string;
+    role: 'admin' | 'teacher' | 'student';
+    studentId?: string;
+    mustChangePassword?: boolean;
+}
+
+export interface SystemSettings {
+    schoolName: string;
+    logoUrl: string;
+    address?: string;
+    phone?: string;
+}
+
 export const STATUS_CONFIG: Record<AttendanceStatus, {
     label: string;
     color: string;
@@ -16,18 +32,7 @@ export const STATUS_CONFIG: Record<AttendanceStatus, {
     online: { label: 'ออนไลน์', color: 'bg-status-online', icon: '💻', bgClass: 'bg-cyan-50 border-cyan-200', dotClass: 'bg-cyan-500' },
 };
 
-export interface AttendanceRecord {
-    id: string;
-    studentId: string;
-    date: string; // YYYY-MM-DD
-    period: number;
-    status: AttendanceStatus;
-    note?: string;
-    classroomId: string;
-    subjectId: string;
-    termId: string;
-    createdAt?: string; // Optional timestamp
-}
+
 
 // Academic Year (ปีการศึกษา) - Independent entity
 export interface AcademicYear {
@@ -180,5 +185,9 @@ export interface QRSession {
     period: number;
     expiresAt: string;
     isActive: boolean;
+    location?: {
+        latitude: number;
+        longitude: number;
+    };
     createdAt: string;
 }
