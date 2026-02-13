@@ -1,0 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 20% 97%;
+    --foreground: 224 30% 14%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 224 30% 14%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 30% 14%;
+
+    --primary: 234 62% 46%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 16% 93%;
+    --secondary-foreground: 224 30% 14%;
+
+    --muted: 220 16% 93%;
+    --muted-foreground: 220 10% 46%;
+
+    --accent: 36 95% 52%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 16% 90%;
+    --input: 220 16% 90%;
+    --ring: 234 62% 46%;
+
+    --radius: 0.625rem;
+
+    /* Attendance status colors */
+    --status-present: 152 60% 42%;
+    --status-late: 36 95% 52%;
+    --status-absent: 0 72% 51%;
+    --status-leave: 200 80% 50%;
+    --status-sick: 280 60% 55%;
+    --status-activity: 160 55% 45%;
+    --status-online: 190 80% 45%;
+
+    /* Sidebar */
+    --sidebar-background: 234 62% 46%;
+    --sidebar-foreground: 234 30% 92%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 234 62% 46%;
+    --sidebar-accent: 234 55% 55%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 234 50% 52%;
+    --sidebar-ring: 0 0% 100%;
+
+    /* Chart */
+    --chart-1: 152 60% 42%;
+    --chart-2: 36 95% 52%;
+    --chart-3: 0 72% 51%;
+    --chart-4: 200 80% 50%;
+    --chart-5: 280 60% 55%;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(224 30% 14% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(224 30% 14% / 0.07), 0 2px 4px -2px hsl(224 30% 14% / 0.05);
+    --shadow-lg: 0 10px 15px -3px hsl(224 30% 14% / 0.08), 0 4px 6px -4px hsl(224 30% 14% / 0.04);
+  }
+
+  .dark {
+    --background: 224 30% 8%;
+    --foreground: 220 16% 93%;
+    --card: 224 25% 12%;
+    --card-foreground: 220 16% 93%;
+    --popover: 224 25% 12%;
+    --popover-foreground: 220 16% 93%;
+    --primary: 234 70% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 224 20% 18%;
+    --secondary-foreground: 220 16% 93%;
+    --muted: 224 20% 18%;
+    --muted-foreground: 220 10% 55%;
+    --accent: 36 95% 52%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 224 20% 20%;
+    --input: 224 20% 20%;
+    --ring: 234 70% 60%;
+    --sidebar-background: 224 30% 10%;
+    --sidebar-foreground: 220 16% 80%;
+    --sidebar-primary: 234 70% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 224 25% 16%;
+    --sidebar-accent-foreground: 220 16% 93%;
+    --sidebar-border: 224 20% 18%;
+    --sidebar-ring: 234 70% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-thai antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-semibold tracking-tight;
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    @apply bg-card/80 backdrop-blur-sm border border-border/50 shadow-sm;
+  }
+}
