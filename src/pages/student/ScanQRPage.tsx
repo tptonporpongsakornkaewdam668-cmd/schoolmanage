@@ -116,10 +116,41 @@ export default function ScanQRPage() {
     const handleScanSuccess = async (token: string) => {
         setLoading(true);
         try {
-            // 1. Get Device Fingerprint
+            // 1. Get Device Fingerprint & Device Info
             const fp = await FingerprintJS.load();
             const fpResult = await fp.get();
             const fingerprint = fpResult.visitorId;
+
+            // Collect detailed device information
+            const deviceInfo = {
+                deviceId: fingerprint, // Use fingerprint as device ID
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language,
+                screenWidth: window.screen.width,
+                screenHeight: window.screen.height,
+                viewport: `${window.innerWidth}x${window.innerHeight}`,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                // Browser detection
+                browser: (() => {
+                    const ua = navigator.userAgent;
+                    if (ua.includes('Chrome')) return 'Chrome';
+                    if (ua.includes('Safari')) return 'Safari';
+                    if (ua.includes('Firefox')) return 'Firefox';
+                    if (ua.includes('Edge')) return 'Edge';
+                    return 'Unknown';
+                })(),
+                // OS detection
+                os: (() => {
+                    const ua = navigator.userAgent;
+                    if (ua.includes('Win')) return 'Windows';
+                    if (ua.includes('Mac')) return 'macOS';
+                    if (ua.includes('Linux')) return 'Linux';
+                    if (ua.includes('Android')) return 'Android';
+                    if (ua.includes('iOS')) return 'iOS';
+                    return 'Unknown';
+                })()
+            };
 
             // 2. Validate Token (Session ID) in Firebase
             const sessionRef = doc(db, 'qr_sessions', token);
@@ -209,6 +240,7 @@ export default function ScanQRPage() {
                 checkInTime: now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
                 location: location ? { latitude: location.lat, longitude: location.lng } : undefined,
                 fingerprint: fingerprint,
+                deviceInfo: deviceInfo,
                 createdAt: now.toISOString()
             });
 

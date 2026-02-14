@@ -516,15 +516,13 @@ export const addSubject = async (subject: Omit<Subject, 'id'>) => {
 
     // Create Timetable Entries
     if (subject.schedules && subject.schedules.length > 0) {
-        const [periods, classrooms] = await Promise.all([
-            getPeriodConfigs(),
-            getClassrooms()
-        ]);
+        const periods = await getPeriodConfigs();
 
         const batch = writeBatch(db);
 
         subject.schedules.forEach(sch => {
-            const classroom = classrooms.find(c => c.id === sch.classroomId);
+            // Since classroomId is now a room name string (not an ID), use it directly
+            const roomName = sch.classroomId || 'ไม่ระบุห้อง';
 
             // Prioritize manually Start/End times, fallback to period config
             let startTime = sch.startTime;
@@ -539,12 +537,13 @@ export const addSubject = async (subject: Omit<Subject, 'id'>) => {
                 }
             }
 
-            if (classroom && startTime && endTime) {
-                const entry: Omit<TimetableEntry, 'id'> = {
+            if (startTime && endTime) {
+                const entry: any = {
                     subjectId,
                     subjectName: subject.name,
-                    classroomId: sch.classroomId,
-                    classroomName: classroom.name,
+                    classroomId: sch.classroomId, // Keep original for reference
+                    classroomName: roomName,
+                    gradeLevel: (sch as any).gradeLevel || '',
                     dayOfWeek: sch.dayOfWeek,
                     period: periodNumber, // Can be 0 if manual time
                     startTime: startTime,
@@ -577,12 +576,6 @@ export const updateSubject = async (id: string, subject: Partial<Subject>) => {
         });
 
         // 2. Add new entries
-        // We need existing subject data for fields not in 'subject' (Partial) if missing
-        // But for efficiency, let's assume 'subject' contains critical info like name, termId if we are updating from Dialog
-        // Or fetch current doc if needed.
-        // Let's assume fields like name, termId are sent or we fetch if critical.
-        // Actually, name is critical for display in timetable.
-
         let subjectName = subject.name;
         let termId = subject.termId;
 
@@ -594,16 +587,15 @@ export const updateSubject = async (id: string, subject: Partial<Subject>) => {
             termId = termId || data.termId;
         }
 
-        const classrooms = await getClassrooms(termId);
-
         subject.schedules.forEach(sch => {
-            const classroom = classrooms.find(c => c.id === sch.classroomId);
-            if (classroom && sch.startTime && sch.endTime) {
-                const entry: Omit<TimetableEntry, 'id'> = {
+            const roomName = sch.classroomId || 'ไม่ระบุห้อง';
+            if (sch.startTime && sch.endTime) {
+                const entry: any = {
                     subjectId: id,
                     subjectName: subjectName!,
                     classroomId: sch.classroomId,
-                    classroomName: classroom.name,
+                    classroomName: roomName,
+                    gradeLevel: (sch as any).gradeLevel || '',
                     dayOfWeek: sch.dayOfWeek,
                     period: 0,
                     startTime: sch.startTime,

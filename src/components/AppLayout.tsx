@@ -114,7 +114,17 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex h-screen overflow-hidden"> {/* Removed bg-background to show animated background */}
+      {/* Animated Background Shapes */}
+      <div className="floating-shapes">
+        <div className="shape shape-1"></div>
+        <div className="shape shape-2"></div>
+        <div className="shape shape-3"></div>
+        <div className="shape shape-4"></div>
+        <div className="shape shape-5"></div>
+        <div className="shape shape-6"></div>
+      </div>
+
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
@@ -126,33 +136,34 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed z-50 flex h-full flex-col bg-sidebar text-sidebar-foreground transition-all duration-300 lg:relative lg:z-auto',
+          'fixed z-50 flex h-full flex-col transition-all duration-300 lg:relative lg:z-auto',
+          'bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-r border-white/20 shadow-xl',
           collapsed ? 'w-[68px]' : 'w-64',
           mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
-        {/* Logo */}
-        <div className="flex h-16 items-center gap-3 px-4">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary overflow-hidden">
+        {/* Logo with gradient */}
+        <div className="flex h-16 items-center gap-3 px-4 border-b border-white/10">
+          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-600 overflow-hidden shadow-lg ring-2 ring-primary/20">
             {settings?.logoUrl ? (
-              <img src={settings.logoUrl} alt="Logo" className="w-full h-full object-contain" />
+              <img src={settings.logoUrl} alt="Logo" className="w-full h-full object-contain p-1" />
             ) : (
-              <GraduationCap className="h-5 w-5 text-sidebar-primary-foreground" />
+              <GraduationCap className="h-6 w-6 text-white" />
             )}
           </div>
           {!collapsed && (
             <div className="overflow-hidden">
-              <h1 className="truncate text-sm font-bold text-sidebar-primary">
+              <h1 className="truncate text-sm font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
                 {settings?.schoolName || 'Class Companion'}
               </h1>
-              <p className="truncate text-xs text-sidebar-foreground/60">
-                {currentUser?.role === 'student' ? 'Student Portal' : 'Teacher Portal'}
+              <p className="truncate text-xs text-muted-foreground font-medium">
+                {currentUser?.role === 'student' ? '🎓 Student Portal' : '👨‍🏫 Teacher Portal'}
               </p>
             </div>
           )}
         </div>
 
-        {/* Nav */}
+        {/* Nav with hover effects */}
         <nav className="mt-2 flex-1 space-y-1 px-3">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -162,14 +173,21 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 to={item.path}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                  'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                  'hover:scale-[1.02] hover:shadow-md',
                   isActive
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                    : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
+                    ? 'bg-gradient-to-r from-primary to-purple-600 text-white shadow-lg shadow-primary/30'
+                    : 'text-slate-700 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-800/50 hover:text-primary'
                 )}
               >
-                <item.icon className="h-5 w-5 shrink-0" />
+                <item.icon className={cn(
+                  'h-5 w-5 shrink-0 transition-transform group-hover:scale-110',
+                  isActive && 'drop-shadow-sm'
+                )} />
                 {!collapsed && <span className="truncate">{item.label}</span>}
+                {isActive && !collapsed && (
+                  <div className="ml-auto h-1.5 w-1.5 rounded-full bg-white"></div>
+                )}
               </Link>
             );
           })}
@@ -188,26 +206,26 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Top bar */}
-        <header className="flex h-16 shrink-0 items-center gap-4 border-b border-border bg-card px-4 lg:px-6">
-          {/* Mobile Menu Icon (LG Hidden) */}
+        {/* Top bar with glass effect */}
+        <header className="flex h-16 shrink-0 items-center gap-4 border-b border-white/20 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl px-4 lg:px-6 shadow-sm">
+          {/* Mobile Menu Icon */}
           <button
             onClick={() => setMobileOpen(true)}
-            className="rounded-lg p-2 text-muted-foreground hover:bg-secondary lg:hidden"
+            className="rounded-xl p-2 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all lg:hidden"
           >
             <Menu className="h-5 w-5" />
           </button>
 
-          {/* Header Logo & Name (Visible on Desktop) */}
-          <div className="hidden lg:flex items-center gap-3 mr-4 border-r pr-4 border-border h-8">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary/10 overflow-hidden ring-1 ring-primary/10">
+          {/* Header Logo & Name with gradient */}
+          <div className="hidden lg:flex items-center gap-3 mr-4 border-r pr-4 border-white/20 h-8">
+            <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-purple-600 overflow-hidden shadow-md ring-2 ring-primary/10">
               {settings?.logoUrl ? (
-                <img src={settings.logoUrl} alt="Logo" className="w-full h-full object-contain" />
+                <img src={settings.logoUrl} alt="Logo" className="w-full h-full object-contain p-0.5" />
               ) : (
-                <GraduationCap className="h-5 w-5 text-primary" />
+                <GraduationCap className="h-5 w-5 text-white" />
               )}
             </div>
-            <h1 className="text-sm font-bold text-primary truncate max-w-[200px]">
+            <h1 className="text-sm font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent truncate max-w-[200px]">
               {settings?.schoolName || 'Class Companion'}
             </h1>
           </div>
@@ -227,17 +245,18 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-3">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 text-left hover:opacity-80 transition-opacity">
+                <button className="group flex items-center gap-2 text-left hover:opacity-90 transition-all rounded-xl p-1.5 hover:bg-white/50 dark:hover:bg-slate-800/50">
                   <div className="hidden lg:block text-right">
-                    <p className="text-sm font-semibold leading-tight">{currentUser?.name}</p>
+                    <p className="text-sm font-semibold leading-tight bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">{currentUser?.name}</p>
                     <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tight">{currentUser?.role}</p>
                   </div>
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-sm overflow-hidden ring-2 ring-primary/10">
+                  <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary to-purple-600 text-sm font-bold text-white shadow-lg overflow-hidden ring-2 ring-primary/20 group-hover:ring-4 transition-all">
                     {currentUser?.avatarUrl ? (
                       <img src={currentUser.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                     ) : (
                       currentUser?.name?.charAt(0) || 'U'
                     )}
+                    <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors"></div>
                   </div>
                 </button>
               </DropdownMenuTrigger>

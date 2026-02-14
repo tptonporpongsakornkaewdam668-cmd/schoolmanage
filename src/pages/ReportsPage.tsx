@@ -9,7 +9,7 @@ import { getAttendanceRecords, getSubjects, getClassrooms, getStudents, updateAt
 import { AttendanceRecord, Subject, Classroom, Student, AttendanceStatus, STATUS_CONFIG } from '@/lib/types';
 import { format as formatDate, parseISO } from 'date-fns';
 import { th } from 'date-fns/locale';
-import { Loader2, Save, PenLine, Filter, X, Eye, ArrowUpDown, Trash, Download, MapPin, Calendar as CalendarIcon } from 'lucide-react';
+import { Loader2, Save, PenLine, Filter, X, Eye, ArrowUpDown, Trash, Download, MapPin, Calendar as CalendarIcon, ShieldCheck, Smartphone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -273,13 +273,16 @@ export default function ReportsPage() {
 
     } else {
       // --- Export List View ---
-      const headers = ['วันที่', 'รหัสนักเรียน', 'ชื่อ-สกุล', 'วิชา', 'ห้องเรียน', 'สถานะ', 'หมายเหตุ', 'พิกัด GPS'].join(',');
+      const headers = ['วันที่', 'รหัสนักเรียน', 'ชื่อ-สกุล', 'วิชา', 'ห้องเรียน', 'สถานะ', 'หมายเหตุ', 'พิกัด GPS', 'เบราว์เซอร์', 'OS', 'Device ID'].join(',');
       csvContent += "\uFEFF" + headers + "\n";
 
       filteredAttendanceList.forEach(record => {
         const lat = record.location?.latitude ?? (record.location as any)?.lat;
         const lng = record.location?.longitude ?? (record.location as any)?.lng;
         const locationStr = lat !== undefined && lng !== undefined ? `${lat},${lng}` : '';
+        const browser = (record as any).deviceInfo?.browser || '-';
+        const os = (record as any).deviceInfo?.os || '-';
+        const deviceId = (record as any).deviceInfo?.deviceId || (record as any).fingerprint || '-';
         const row = [
           `"${formatDisplayDate(record.date)}"`,
           `"${getStudentCode(record.studentId)}"`,
@@ -288,7 +291,10 @@ export default function ReportsPage() {
           `"${getClassroomName(record.classroomId)}"`,
           `"${getStatusInfo(record.status).label}"`,
           `"${record.note || ''}"`,
-          `"${locationStr}"`
+          `"${locationStr}"`,
+          `"${browser}"`,
+          `"${os}"`,
+          `"${deviceId}"`
         ];
         csvContent += row.join(',') + "\n";
       });
@@ -540,6 +546,8 @@ export default function ReportsPage() {
                         <TableHead className="w-[120px] whitespace-nowrap">สถานะ</TableHead>
                         <TableHead className="whitespace-nowrap">หมายเหตุ</TableHead>
                         <TableHead className="whitespace-nowrap">พิกัด (GPS)</TableHead>
+                        <TableHead className="whitespace-nowrap">อุปกรณ์</TableHead>
+                        <TableHead className="whitespace-nowrap">Fingerprint</TableHead>
                         <TableHead className="text-right w-[100px] whitespace-nowrap">จัดการ</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -603,6 +611,35 @@ export default function ReportsPage() {
                                   </div>
                                   <span>L: {record.location.latitude ?? (record.location as any).lat}</span>
                                   <span>G: {record.location.longitude ?? (record.location as any).lng}</span>
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-[10px] py-1">
+                              {(record as any).deviceInfo ? (
+                                <div className="flex flex-col text-purple-700 bg-purple-50/50 p-1.5 rounded-md border border-purple-100">
+                                  <div className="flex items-center gap-1 font-bold mb-1">
+                                    <Smartphone className="h-3 w-3" />
+                                    <span>อุปกรณ์</span>
+                                  </div>
+                                  <span className="truncate" title={(record as any).deviceInfo.browser}>{(record as any).deviceInfo.browser}</span>
+                                  <span className="truncate" title={(record as any).deviceInfo.os}>{(record as any).deviceInfo.os}</span>
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-[10px] py-1 font-mono">
+                              {((record as any).deviceInfo?.deviceId || (record as any).fingerprint) ? (
+                                <div className="flex flex-col text-green-700 bg-green-50/50 p-1.5 rounded-md border border-green-100 max-w-[150px]">
+                                  <div className="flex items-center gap-1 font-bold mb-1">
+                                    <ShieldCheck className="h-3 w-3" />
+                                    <span>ID</span>
+                                  </div>
+                                  <span className="truncate text-[9px]" title={((record as any).deviceInfo?.deviceId || (record as any).fingerprint)}>
+                                    {((record as any).deviceInfo?.deviceId || (record as any).fingerprint).substring(0, 16)}...
+                                  </span>
                                 </div>
                               ) : (
                                 <span className="text-muted-foreground">-</span>

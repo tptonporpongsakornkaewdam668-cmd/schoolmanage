@@ -140,6 +140,9 @@ export default function TimetablePage() {
                               <div className={`h-full w-1 absolute left-0 top-0 bottom-0 ${day.color.replace('bg-', 'bg-opacity-50 ')}`}></div>
                               <div className="pl-2 h-full flex flex-col justify-center">
                                 <p className="text-xs font-bold truncate leading-tight">{entry.subjectName}</p>
+                                {(entry as any).gradeLevel && (
+                                  <p className="text-[10px] font-semibold text-primary truncate">{(entry as any).gradeLevel}</p>
+                                )}
                                 <p className="text-[10px] text-muted-foreground truncate">{entry.classroomName}</p>
                                 <p className="text-[9px] text-muted-foreground/70 hidden group-hover/item:block">
                                   {entry.startTime} - {entry.endTime}

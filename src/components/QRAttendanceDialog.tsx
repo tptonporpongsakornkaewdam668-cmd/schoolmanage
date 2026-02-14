@@ -332,16 +332,21 @@ export function QRAttendanceDialog({ subject, period, onSessionCreated }: QRAtte
                                         ) : (
                                             checkedInStudents.map((item) => (
                                                 <div key={item.id} className="flex items-center justify-between p-2 bg-white rounded-lg border shadow-sm animate-in fade-in slide-in-from-right-2 duration-300">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="h-7 w-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-[10px]">
+                                                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                        <div className="h-7 w-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-[10px] shrink-0">
                                                             {item.studentName?.charAt(0) || <Users className="h-3 w-3" />}
                                                         </div>
-                                                        <div className="flex flex-col">
-                                                            <span className="text-[11px] font-bold leading-none">{item.studentName || 'Unknown Student'}</span>
+                                                        <div className="flex flex-col min-w-0 flex-1">
+                                                            <span className="text-[11px] font-bold leading-none truncate">{item.studentName || 'Unknown Student'}</span>
                                                             <span className="text-[9px] text-muted-foreground mt-0.5">{item.checkInTime}</span>
+                                                            {item.deviceInfo && (
+                                                                <span className="text-[8px] text-blue-600 mt-0.5 truncate" title={item.deviceInfo.deviceId}>
+                                                                    {item.deviceInfo.browser} • {item.deviceInfo.os}
+                                                                </span>
+                                                            )}
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center gap-1.5">
+                                                    <div className="flex items-center gap-1.5 shrink-0">
                                                         {item.location && <MapPin className="h-3 w-3 text-blue-400" />}
                                                         {item.fingerprint && <ShieldCheck className="h-3 w-3 text-green-400" />}
                                                         <Badge className="bg-green-500 text-[9px] h-4 py-0 px-1 hover:bg-green-500">มาครับ/ค่ะ</Badge>

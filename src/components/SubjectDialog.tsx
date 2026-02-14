@@ -41,8 +41,8 @@ export function SubjectDialog({ classrooms, periods, onSave }: SubjectDialogProp
     const [schedules, setSchedules] = useState<SubjectSchedule[]>([]);
 
     // State for temporary schedule addition
-    const [scheduleForm, setScheduleForm] = useState<{ classroomId: string, day: string, period: string, startTime: string, endTime: string }>({
-        classroomId: '', day: '', period: '', startTime: '', endTime: ''
+    const [scheduleForm, setScheduleForm] = useState<{ classroomId: string, gradeLevel: string, day: string, period: string, startTime: string, endTime: string }>({
+        classroomId: '', gradeLevel: '', day: '', period: '', startTime: '', endTime: ''
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -87,15 +87,16 @@ export function SubjectDialog({ classrooms, periods, onSave }: SubjectDialogProp
     };
 
     const addSchedule = () => {
-        if (!scheduleForm.classroomId || !scheduleForm.day || !scheduleForm.startTime || !scheduleForm.endTime) return;
+        if (!scheduleForm.classroomId || !scheduleForm.gradeLevel || !scheduleForm.day || !scheduleForm.startTime || !scheduleForm.endTime) return;
         setSchedules([...schedules, {
             classroomId: scheduleForm.classroomId,
+            gradeLevel: scheduleForm.gradeLevel,
             dayOfWeek: Number(scheduleForm.day),
             period: 0, // Not using period number anymore
             startTime: scheduleForm.startTime,
             endTime: scheduleForm.endTime
-        }]);
-        setScheduleForm({ ...scheduleForm, day: scheduleForm.day, startTime: '', endTime: '' });
+        } as any]);
+        setScheduleForm({ ...scheduleForm, classroomId: '', gradeLevel: '', day: scheduleForm.day, startTime: '', endTime: '' });
     };
 
     const removeSchedule = (index: number) => {
@@ -112,7 +113,7 @@ export function SubjectDialog({ classrooms, periods, onSave }: SubjectDialogProp
                     เพิ่มรายวิชา
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>เพิ่มรายวิชาใหม่</DialogTitle>
                 </DialogHeader>
@@ -172,70 +173,78 @@ export function SubjectDialog({ classrooms, periods, onSave }: SubjectDialogProp
 
                         {/* Schedule Input Form */}
                         {formData.classrooms.length > 0 && (
-                            <div className="flex gap-2 items-end bg-secondary/20 p-3 rounded-lg">
-                                <div className="space-y-1 w-[150px]">
-                                    <Label className="text-xs">ห้องเรียน</Label>
-                                    <Select
-                                        value={scheduleForm.classroomId}
-                                        onValueChange={v => setScheduleForm({ ...scheduleForm, classroomId: v })}
-                                    >
-                                        <SelectTrigger className="h-8">
-                                            <SelectValue placeholder="เลือกห้อง" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {classrooms.filter(c => formData.classrooms.includes(c.id)).map(c => (
-                                                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                            <div className="bg-secondary/20 p-4 rounded-lg space-y-3">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <div className="space-y-1">
+                                        <Label className="text-xs">ห้องเรียน</Label>
+                                        <Input
+                                            placeholder="กรอกห้องเรียน (เช่น E101, Lab1)"
+                                            className="h-9"
+                                            value={scheduleForm.classroomId}
+                                            onChange={e => setScheduleForm({ ...scheduleForm, classroomId: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label className="text-xs">ชั้นเรียน</Label>
+                                        <Input
+                                            placeholder="เช่น ม.1, ม.4/1"
+                                            className="h-9"
+                                            value={scheduleForm.gradeLevel}
+                                            onChange={e => setScheduleForm({ ...scheduleForm, gradeLevel: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label className="text-xs">วัน</Label>
+                                        <Select
+                                            value={scheduleForm.day}
+                                            onValueChange={v => setScheduleForm({ ...scheduleForm, day: v })}
+                                        >
+                                            <SelectTrigger className="h-9">
+                                                <SelectValue placeholder="วัน" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {DAYS.map(d => (
+                                                    <SelectItem key={d.value} value={d.value.toString()}>{d.label}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label className="text-xs">เวลาเริ่ม</Label>
+                                        <Input
+                                            type="time"
+                                            value={scheduleForm.startTime}
+                                            onChange={e => setScheduleForm({ ...scheduleForm, startTime: e.target.value })}
+                                            className="h-9"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label className="text-xs">เวลาสิ้นสุด</Label>
+                                        <Input
+                                            type="time"
+                                            value={scheduleForm.endTime}
+                                            onChange={e => setScheduleForm({ ...scheduleForm, endTime: e.target.value })}
+                                            className="h-9"
+                                        />
+                                    </div>
+                                    <div className="space-y-1 flex items-end">
+                                        <Button type="button" className="w-full h-9" onClick={addSchedule}>
+                                            <Plus className="mr-1 h-4 w-4" /> เพิ่มตารางเรียน
+                                        </Button>
+                                    </div>
                                 </div>
-                                <div className="space-y-1 w-[120px]">
-                                    <Label className="text-xs">วัน</Label>
-                                    <Select
-                                        value={scheduleForm.day}
-                                        onValueChange={v => setScheduleForm({ ...scheduleForm, day: v })}
-                                    >
-                                        <SelectTrigger className="h-8">
-                                            <SelectValue placeholder="วัน" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {DAYS.map(d => (
-                                                <SelectItem key={d.value} value={d.value.toString()}>{d.label}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-1 w-[120px]">
-                                    <Label className="text-xs">เริ่ม</Label>
-                                    <Input
-                                        type="time"
-                                        value={scheduleForm.startTime}
-                                        onChange={e => setScheduleForm({ ...scheduleForm, startTime: e.target.value })}
-                                        className="h-8"
-                                    />
-                                </div>
-                                <div className="space-y-1 w-[120px]">
-                                    <Label className="text-xs">สิ้นสุด</Label>
-                                    <Input
-                                        type="time"
-                                        value={scheduleForm.endTime}
-                                        onChange={e => setScheduleForm({ ...scheduleForm, endTime: e.target.value })}
-                                        className="h-8"
-                                    />
-                                </div>
-                                <Button type="button" size="sm" onClick={addSchedule}>เพิ่ม</Button>
                             </div>
                         )}
 
                         {/* Schedule List */}
                         <div className="space-y-2">
                             {schedules.map((sch, idx) => {
-                                const room = classrooms.find(c => c.id === sch.classroomId);
                                 const day = DAYS.find(d => d.value === sch.dayOfWeek);
                                 return (
                                     <div key={idx} className="flex justify-between items-center text-sm p-2 bg-secondary/10 rounded border">
-                                        <div className="flex items-center gap-2">
-                                            <Badge variant="outline">{room?.name}</Badge>
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <Badge variant="outline">{(sch as any).classroomId}</Badge>
+                                            <Badge variant="secondary">{(sch as any).gradeLevel || 'ไม่ระบุชั้น'}</Badge>
                                             <span>
                                                 {day?.label} {sch.startTime} - {sch.endTime}
                                             </span>
