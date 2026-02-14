@@ -125,8 +125,42 @@ export default function LoginPage() {
                         </Button>
                     </CardFooter>
                 </form>
-                <div className="pb-6 text-center text-sm text-muted-foreground">
-                    <p>หากไม่มีบัญชี กรุณาติดต่อผู้ดูแลระบบ</p>
+                <div className="px-6 pb-6 space-y-3">
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t border-muted-foreground/10" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-white px-2 text-muted-foreground font-bold tracking-wider">บัญชีสำหรับทดสอบ</span>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-[11px] h-8 bg-blue-50/30 hover:bg-blue-50 border-blue-100 text-blue-700 font-bold"
+                            onClick={() => {
+                                setUsername('Admin');
+                                setPassword('admin888');
+                            }}
+                        >
+                            แอดมิน (admin888)
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-[11px] h-8 bg-green-50/30 hover:bg-green-50 border-green-100 text-green-700 font-bold"
+                            onClick={() => {
+                                setUsername('67014');
+                                setPassword('67014');
+                            }}
+                        >
+                            นักเรียน (67014)
+                        </Button>
+                    </div>
+                    <div className="text-center text-[11px] text-muted-foreground pt-1">
+                        <p>หากไม่มีบัญชี กรุณาติดต่อผู้ดูแลระบบ</p>
+                    </div>
                 </div>
             </Card>
 

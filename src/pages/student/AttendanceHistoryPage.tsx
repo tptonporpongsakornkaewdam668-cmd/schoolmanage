@@ -120,27 +120,26 @@ export default function AttendanceHistoryPage() {
                                 ))}
                             </SelectContent>
                         </Select>
-                        <div className="flex items-center gap-2 sm:col-span-2 lg:col-span-2">
+                        <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:col-span-2 lg:col-span-2">
                             <div className="space-y-1 flex-1">
-                                <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">จากวันที่</label>
+                                <label className="text-[10px] font-bold uppercase text-primary/60 ml-1">จากวันที่</label>
                                 <div className="relative">
                                     <CalendarIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                                     <Input
                                         type="date"
-                                        className="h-9 pl-9 text-xs bg-background rounded-lg border-muted-foreground/20"
+                                        className="h-9 pl-9 text-xs bg-background rounded-xl border-muted-foreground/20 focus:ring-1 focus:ring-primary/20 shadow-sm"
                                         value={startDate}
                                         onChange={e => setStartDate(e.target.value)}
                                     />
                                 </div>
                             </div>
-                            <span className="text-muted-foreground text-xs font-bold mt-auto">ถึง</span>
                             <div className="space-y-1 flex-1">
-                                <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">ถึงวันที่</label>
+                                <label className="text-[10px] font-bold uppercase text-primary/60 ml-1">ถึงวันที่</label>
                                 <div className="relative">
                                     <CalendarIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                                     <Input
                                         type="date"
-                                        className="h-9 pl-9 text-xs bg-background rounded-lg border-muted-foreground/20"
+                                        className="h-9 pl-9 text-xs bg-background rounded-xl border-muted-foreground/20 focus:ring-1 focus:ring-primary/20 shadow-sm"
                                         value={endDate}
                                         onChange={e => setEndDate(e.target.value)}
                                     />
