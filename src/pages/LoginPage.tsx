@@ -12,11 +12,19 @@ import { SystemSettings } from '@/lib/types';
 import { useEffect } from 'react';
 
 export default function LoginPage() {
-    const [settings, setSettings] = useState<SystemSettings | null>(null);
+    const [settings, setSettings] = useState<SystemSettings | null>(() => {
+        const cached = localStorage.getItem('system_settings');
+        return cached ? JSON.parse(cached) : null;
+    });
     const [username, setUsername] = useState('');
 
     useEffect(() => {
-        getSystemSettings().then(setSettings);
+        getSystemSettings().then((s) => {
+            if (s) {
+                setSettings(s);
+                localStorage.setItem('system_settings', JSON.stringify(s));
+            }
+        });
     }, []);
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -29,7 +37,7 @@ export default function LoginPage() {
         setLoading(true);
 
         try {
-            const success = await login(username, password);
+            const success = await login(username.trim(), password.trim());
             if (success) {
                 toast({
                     title: 'ยินดีต้อนรับกลับมา!',

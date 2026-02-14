@@ -12,6 +12,7 @@ interface AuthContextType {
     loading: boolean;
     login: (username: string, password: string) => Promise<boolean>;
     logout: () => void;
+    refreshUserData: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -103,7 +104,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                         id: userDoc.id,
                         username: userData.username,
                         name: userData.name,
-                        role: userData.role || 'teacher'
+                        role: userData.role || 'teacher',
+                        avatarUrl: userData.avatarUrl
                     };
                     setCurrentUser(appUser);
                     localStorage.setItem('app_user', JSON.stringify(appUser));
@@ -128,7 +130,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                         name: studentData.fullName,
                         role: 'student',
                         studentId: studentDoc.id,
-                        mustChangePassword: studentData.mustChangePassword
+                        mustChangePassword: studentData.mustChangePassword,
+                        avatarUrl: studentData.avatarUrl || studentData.photoUrl
                     };
                     setCurrentUser(appUser);
                     localStorage.setItem('app_user', JSON.stringify(appUser));
@@ -148,11 +151,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem('app_user');
     };
 
+    const refreshUserData = async () => {
+        if (!currentUser) return;
+        try {
+            const usersRef = collection(db, 'users');
+            const studentsRef = collection(db, 'students');
+            let updatedUser: AppUser | null = null;
+
+            if (currentUser.role === 'student') {
+                const q = query(studentsRef, where('username', '==', currentUser.username));
+                const snap = await getDocs(q);
+                if (!snap.empty) {
+                    const data = snap.docs[0].data();
+                    updatedUser = {
+                        ...currentUser,
+                        name: data.fullName,
+                        avatarUrl: data.avatarUrl || data.photoUrl,
+                        mustChangePassword: data.mustChangePassword
+                    };
+                }
+            } else {
+                const q = query(usersRef, where('username', '==', currentUser.username));
+                const snap = await getDocs(q);
+                if (!snap.empty) {
+                    const data = snap.docs[0].data();
+                    updatedUser = {
+                        ...currentUser,
+                        name: data.name,
+                        avatarUrl: data.avatarUrl
+                    };
+                }
+            }
+
+            if (updatedUser) {
+                setCurrentUser(updatedUser);
+                localStorage.setItem('app_user', JSON.stringify(updatedUser));
+            }
+        } catch (error) {
+            console.error("Failed to refresh user data", error);
+        }
+    };
+
     const value = {
         currentUser,
         loading,
         login,
-        logout
+        logout,
+        refreshUserData
     };
 
     return (

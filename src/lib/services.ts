@@ -995,5 +995,10 @@ export const deleteUser = async (id: string) => {
     return await deleteDoc(docRef);
 };
 
+export const updateUser = async (id: string, data: Partial<AppUser>): Promise<void> => {
+    const docRef = doc(db, 'users', id);
+    await updateDoc(docRef, data as any);
+};
+
 import bcrypt from 'bcryptjs';
 import { setDoc } from 'firebase/firestore';

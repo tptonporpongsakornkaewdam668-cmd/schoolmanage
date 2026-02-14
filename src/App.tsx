@@ -15,6 +15,7 @@ import ReportsPage from "./pages/ReportsPage";
 import SettingsPage from "./pages/SettingsPage";
 import ClassroomsPage from "./pages/ClassroomsPage";
 import ClassroomDetailsPage from "./pages/ClassroomDetailsPage";
+import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import LoginPage from "@/pages/LoginPage";
@@ -42,7 +43,7 @@ const App = () => (
               <Route element={<PrivateRoute />}>
                 {/* Global Routes */}
                 <Route path="/" element={<AppLayout><RoleBasedDashboard /></AppLayout>} />
-                <Route path="/profile" element={<AppLayout><NotFound /></AppLayout>} />
+                <Route path="/profile" element={<AppLayout><ProfilePage /></AppLayout>} />
                 <Route path="/change-password" element={<AppLayout><ChangePasswordPage /></AppLayout>} />
 
                 {/* Teacher Routes */}

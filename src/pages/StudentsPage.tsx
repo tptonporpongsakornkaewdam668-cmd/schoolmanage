@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Search, Upload, Download, MoreHorizontal, Loader2, FileX } from 'lucide-react';
+import { Plus, Search, Upload, Download, MoreHorizontal, Loader2, FileX, Trash, User as UserIcon } from 'lucide-react';
 import { getStudentsByClassroom, getClassrooms, addStudent, deleteStudent, getSubjects, getAssignmentsBySubject, getScoresByAssignment, updateStudent } from '@/lib/services';
 import { Student, Classroom, Subject, Assignment } from '@/lib/types';
 import { ImportStudentsDialog } from '@/components/ImportStudentsDialog';
@@ -21,7 +21,7 @@ import { useTerm } from '@/lib/termContext';
 import { StudentDialog } from '@/components/StudentDialog';
 import { EditStudentDialog } from '@/components/EditStudentDialog';
 import { useToast } from '@/hooks/use-toast';
-import { Trash } from 'lucide-react';
+
 const statusLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
   active: { label: 'กำลังเรียน', variant: 'default' },
   suspended: { label: 'พักการเรียน', variant: 'secondary' },
@@ -269,7 +269,12 @@ export default function StudentsPage() {
                             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
                               {student.fullName.charAt(0)}
                             </div>
-                            <span className="font-medium">{student.fullName}</span>
+                            <div className="flex flex-col">
+                              <span className="font-medium">{student.fullName}</span>
+                              <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                <UserIcon className="h-2.5 w-2.5" /> {student.username || '-'}
+                              </span>
+                            </div>
                           </div>
                         </td>
                         <td className="px-4 py-3">

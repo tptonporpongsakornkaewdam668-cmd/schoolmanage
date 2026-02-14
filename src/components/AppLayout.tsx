@@ -59,11 +59,40 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const { currentUser, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [settings, setSettings] = useState<SystemSettings | null>(null);
+  const [settings, setSettings] = useState<SystemSettings | null>(() => {
+    const cached = localStorage.getItem('system_settings');
+    if (cached) {
+      try {
+        const s = JSON.parse(cached);
+        if (s.schoolName) document.title = s.schoolName;
+        return s;
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  });
   const location = useLocation();
 
   useEffect(() => {
-    getSystemSettings().then(setSettings);
+    getSystemSettings().then((s) => {
+      setSettings(s);
+      if (s) {
+        localStorage.setItem('system_settings', JSON.stringify(s));
+        if (s.schoolName) {
+          document.title = s.schoolName;
+        }
+        if (s.logoUrl) {
+          let link: HTMLLinkElement | null = document.querySelector("link[rel~='icon']");
+          if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            document.getElementsByTagName('head')[0].appendChild(link);
+          }
+          link.href = s.logoUrl;
+        }
+      }
+    });
   }, []);
 
   const navItems = currentUser?.role === 'student' ? studentNavItems : teacherNavItems;
@@ -149,6 +178,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Top bar */}
         <header className="flex h-16 shrink-0 items-center gap-4 border-b border-border bg-card px-4 lg:px-6">
+          {/* Mobile Menu Icon (LG Hidden) */}
           <button
             onClick={() => setMobileOpen(true)}
             className="rounded-lg p-2 text-muted-foreground hover:bg-secondary lg:hidden"
@@ -156,24 +186,46 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <Menu className="h-5 w-5" />
           </button>
 
+          {/* Header Logo & Name (Visible on Desktop) */}
+          <div className="hidden lg:flex items-center gap-3 mr-4 border-r pr-4 border-border h-8">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary/10 overflow-hidden ring-1 ring-primary/10">
+              {settings?.logoUrl ? (
+                <img src={settings.logoUrl} alt="Logo" className="w-full h-full object-contain" />
+              ) : (
+                <GraduationCap className="h-5 w-5 text-primary" />
+              )}
+            </div>
+            <h1 className="text-sm font-bold text-primary truncate max-w-[200px]">
+              {settings?.schoolName || 'Class Companion'}
+            </h1>
+          </div>
+
           {/* Term Selector */}
           <TermSelector />
 
           <div className="flex-1" />
 
           {/* Academic Management - Only for teachers */}
-          {currentUser?.role !== 'student' && <AcademicManagementDialog />}
+          {currentUser?.role !== 'student' && (
+            <div className="hidden sm:block">
+              <AcademicManagementDialog />
+            </div>
+          )}
 
           <div className="flex items-center gap-3">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-3 text-left hover:opacity-80 transition-opacity">
-                  <div className="hidden sm:block">
-                    <p className="text-sm font-medium">{currentUser?.name}</p>
-                    <p className="text-xs text-muted-foreground uppercase">{currentUser?.role}</p>
+                <button className="flex items-center gap-2 text-left hover:opacity-80 transition-opacity">
+                  <div className="hidden lg:block text-right">
+                    <p className="text-sm font-semibold leading-tight">{currentUser?.name}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tight">{currentUser?.role}</p>
                   </div>
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-sm">
-                    {currentUser?.name?.charAt(0) || 'U'}
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-sm overflow-hidden ring-2 ring-primary/10">
+                    {currentUser?.avatarUrl ? (
+                      <img src={currentUser.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      currentUser?.name?.charAt(0) || 'U'
+                    )}
                   </div>
                 </button>
               </DropdownMenuTrigger>

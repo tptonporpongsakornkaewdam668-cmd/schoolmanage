@@ -219,7 +219,7 @@ export function AcademicManagementDialog() {
                         <Card>
                             <CardContent className="pt-6">
                                 <div className="space-y-4">
-                                    <div className="grid grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                         <div>
                                             <Label>ปีการศึกษา</Label>
                                             <Input

@@ -528,15 +528,15 @@ export default function ReportsPage() {
                   <Table>
                     <TableHeader className="bg-muted/50">
                       <TableRow>
-                        <TableHead className="w-[140px]">วัน/เวลา</TableHead>
-                        <TableHead className="w-[100px]">รหัสนักเรียน</TableHead>
-                        <TableHead className="min-w-[150px]">ชื่อ-สกุล</TableHead>
-                        <TableHead>วิชา</TableHead>
-                        <TableHead>ห้อง</TableHead>
-                        <TableHead className="w-[120px]">สถานะ</TableHead>
-                        <TableHead>หมายเหตุ</TableHead>
-                        <TableHead>พิกัด (GPS)</TableHead>
-                        <TableHead className="text-right w-[100px]">จัดการ</TableHead>
+                        <TableHead className="w-[140px] whitespace-nowrap">วัน/เวลา</TableHead>
+                        <TableHead className="w-[100px] whitespace-nowrap">รหัสนักเรียน</TableHead>
+                        <TableHead className="min-w-[150px] whitespace-nowrap">ชื่อ-สกุล</TableHead>
+                        <TableHead className="whitespace-nowrap">วิชา</TableHead>
+                        <TableHead className="whitespace-nowrap">ห้อง</TableHead>
+                        <TableHead className="w-[120px] whitespace-nowrap">สถานะ</TableHead>
+                        <TableHead className="whitespace-nowrap">หมายเหตุ</TableHead>
+                        <TableHead className="whitespace-nowrap">พิกัด (GPS)</TableHead>
+                        <TableHead className="text-right w-[100px] whitespace-nowrap">จัดการ</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>

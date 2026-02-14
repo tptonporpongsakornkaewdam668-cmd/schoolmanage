@@ -268,7 +268,7 @@ export default function AttendancePage() {
           ) : (
             <>
               <Select value={selectedSubject} onValueChange={setSelectedSubject}>
-                <SelectTrigger className="w-[240px]">
+                <SelectTrigger className="w-full sm:w-[240px]">
                   <SelectValue placeholder="เลือกวิชา" />
                 </SelectTrigger>
                 <SelectContent>
@@ -352,7 +352,7 @@ export default function AttendancePage() {
                       <p className="text-sm text-muted-foreground">{student.studentCode}</p>
                     </div>
 
-                    <div className="flex flex-wrap gap-2">
+                    <div className="grid grid-cols-4 gap-1.5 sm:flex sm:flex-wrap sm:gap-2">
                       {statusKeys.map((status) => {
                         const btnConfig = STATUS_CONFIG[status];
                         const isActive = currentStatus === status;
@@ -361,9 +361,9 @@ export default function AttendancePage() {
                             key={status}
                             onClick={() => setStatus(student.id, status)}
                             className={cn(
-                              'rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors',
+                              'rounded-md border py-1.5 text-xs font-semibold sm:px-3 sm:py-1.5 sm:text-sm transition-all',
                               isActive
-                                ? `${btnConfig.bgClass} border-transparent`
+                                ? `${btnConfig.bgClass} border-transparent ring-1 ring-primary/20 shadow-sm`
                                 : 'border-border bg-background hover:bg-secondary'
                             )}
                           >

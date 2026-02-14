@@ -7,6 +7,7 @@ export interface AppUser {
     role: 'admin' | 'teacher' | 'student';
     studentId?: string;
     mustChangePassword?: boolean;
+    avatarUrl?: string;
 }
 
 export interface SystemSettings {

@@ -143,10 +143,10 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="timetable" className="space-y-4">
-        <TabsList className="grid grid-cols-3 w-full lg:w-[600px]">
-          <TabsTrigger value="timetable">เวลาเรียน (Timetable)</TabsTrigger>
-          <TabsTrigger value="grading">เกณฑ์การตัดเกรด (Grading)</TabsTrigger>
-          <TabsTrigger value="website">จัดการเว็บไซต์ (Website)</TabsTrigger>
+        <TabsList className="flex flex-col h-auto sm:grid sm:grid-cols-3 w-full lg:w-[600px] gap-1 p-1">
+          <TabsTrigger value="timetable" className="text-xs sm:text-sm py-2">เวลาเรียน</TabsTrigger>
+          <TabsTrigger value="grading" className="text-xs sm:text-sm py-2">เกณฑ์การตัดเกรด</TabsTrigger>
+          <TabsTrigger value="website" className="text-xs sm:text-sm py-2">จัดการเว็บไซต์</TabsTrigger>
         </TabsList>
 
         <TabsContent value="timetable" className="space-y-4">
@@ -157,24 +157,26 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {periodConfigs.map((period, index) => (
-                <div key={index} className="flex items-end gap-3">
-                  <div className="grid w-full max-w-sm items-center gap-1.5">
-                    <Label>คาบที่ {period.periodNumber}</Label>
-                    <div className="flex gap-2">
+                <div key={index} className="flex flex-col sm:flex-row sm:items-end gap-3 p-4 rounded-xl border border-border/50 bg-muted/20 relative">
+                  <div className="flex-1 space-y-1.5">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">คาบที่ {period.periodNumber}</Label>
+                    <div className="flex items-center gap-2">
                       <Input
                         type="time"
+                        className="bg-background"
                         value={period.startTime}
                         onChange={(e) => updatePeriod(index, 'startTime', e.target.value)}
                       />
-                      <span className="flex items-center">-</span>
+                      <span className="text-muted-foreground font-bold">-</span>
                       <Input
                         type="time"
+                        className="bg-background"
                         value={period.endTime}
                         onChange={(e) => updatePeriod(index, 'endTime', e.target.value)}
                       />
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => deletePeriod(index)}>
+                  <Button variant="ghost" size="icon" className="absolute top-2 right-2 sm:static sm:h-10 sm:w-10" onClick={() => deletePeriod(index)}>
                     <Trash className="h-4 w-4 text-destructive" />
                   </Button>
                 </div>
@@ -199,32 +201,37 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {gradeConfigs.map((grade, index) => (
-                <div key={index} className="flex items-end gap-3">
-                  <div className="grid w-full max-w-sm items-center gap-1.5">
-                    <Label>เกรด</Label>
-                    <Input
-                      value={grade.grade}
-                      onChange={(e) => updateGrade(index, 'grade', e.target.value)}
-                      placeholder="เช่น 4, 3.5, 3"
-                    />
+                <div key={index} className="flex flex-col sm:flex-row sm:items-end gap-3 p-4 rounded-xl border border-border/50 bg-muted/20 relative">
+                  <div className="grid grid-cols-3 gap-3 flex-1">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">เกรด</Label>
+                      <Input
+                        className="bg-background"
+                        value={grade.grade}
+                        onChange={(e) => updateGrade(index, 'grade', e.target.value)}
+                        placeholder="4"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">คะแนนต่ำ</Label>
+                      <Input
+                        type="number"
+                        className="bg-background"
+                        value={grade.minScore}
+                        onChange={(e) => updateGrade(index, 'minScore', parseInt(e.target.value))}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">คะแนนสูง</Label>
+                      <Input
+                        type="number"
+                        className="bg-background"
+                        value={grade.maxScore}
+                        onChange={(e) => updateGrade(index, 'maxScore', parseInt(e.target.value))}
+                      />
+                    </div>
                   </div>
-                  <div className="grid w-full max-w-sm items-center gap-1.5">
-                    <Label>คะแนนต่ำสุด</Label>
-                    <Input
-                      type="number"
-                      value={grade.minScore}
-                      onChange={(e) => updateGrade(index, 'minScore', parseInt(e.target.value))}
-                    />
-                  </div>
-                  <div className="grid w-full max-w-sm items-center gap-1.5">
-                    <Label>คะแนนสูงสุด</Label>
-                    <Input
-                      type="number"
-                      value={grade.maxScore}
-                      onChange={(e) => updateGrade(index, 'maxScore', parseInt(e.target.value))}
-                    />
-                  </div>
-                  <Button variant="ghost" size="icon" onClick={() => deleteGrade(index)}>
+                  <Button variant="ghost" size="icon" className="absolute top-2 right-2 sm:static sm:h-10 sm:w-10" onClick={() => deleteGrade(index)}>
                     <Trash className="h-4 w-4 text-destructive" />
                   </Button>
                 </div>
@@ -278,6 +285,7 @@ export default function SettingsPage() {
                     setSavingSettings(true);
                     try {
                       await saveSystemSettings(systemSettings);
+                      localStorage.setItem('system_settings', JSON.stringify(systemSettings));
                       toast({ title: "บันทึกข้อมูลเรียบร้อย" });
                     } catch (e) {
                       toast({ title: "บันทึกไม่สำเร็จ", variant: "destructive" });

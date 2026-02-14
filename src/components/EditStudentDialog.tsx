@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Student, Classroom } from '@/lib/types';
-import { Edit } from 'lucide-react';
+import { Edit, Key, User as UserIcon } from 'lucide-react';
+import bcrypt from 'bcryptjs';
 
 interface EditStudentDialogProps {
     student: Student;
@@ -26,6 +27,8 @@ export function EditStudentDialog({ student, classrooms, onSave }: EditStudentDi
     const [formData, setFormData] = useState({
         studentCode: student.studentCode,
         fullName: student.fullName,
+        username: student.username || '',
+        password: '',
         classroomId: student.classroomId,
         status: student.status
     });
@@ -35,6 +38,8 @@ export function EditStudentDialog({ student, classrooms, onSave }: EditStudentDi
             setFormData({
                 studentCode: student.studentCode,
                 fullName: student.fullName,
+                username: student.username || '',
+                password: '',
                 classroomId: student.classroomId,
                 status: student.status
             });
@@ -45,7 +50,20 @@ export function EditStudentDialog({ student, classrooms, onSave }: EditStudentDi
         e.preventDefault();
         setLoading(true);
         try {
-            await onSave(student.id, formData);
+            const dataToSave: Partial<Student> = {
+                studentCode: formData.studentCode,
+                fullName: formData.fullName,
+                username: formData.username,
+                classroomId: formData.classroomId,
+                status: formData.status
+            };
+
+            if (formData.password) {
+                dataToSave.password = await bcrypt.hash(formData.password, 10);
+                dataToSave.mustChangePassword = true;
+            }
+
+            await onSave(student.id, dataToSave);
             setOpen(false);
         } catch (error) {
             console.error(error);
@@ -81,6 +99,31 @@ export function EditStudentDialog({ student, classrooms, onSave }: EditStudentDi
                             value={formData.fullName}
                             onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                         />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="username" className="flex items-center gap-2">
+                                <UserIcon className="h-4 w-4" /> Username
+                            </Label>
+                            <Input
+                                id="username"
+                                required
+                                value={formData.username}
+                                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="password" className="flex items-center gap-2">
+                                <Key className="h-4 w-4" /> Password
+                            </Label>
+                            <Input
+                                id="password"
+                                type="password"
+                                placeholder="เว้นว่างไว้หากไม่เปลี่ยน"
+                                value={formData.password}
+                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                            />
+                        </div>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="classroom">ห้องเรียน</Label>
