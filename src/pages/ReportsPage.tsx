@@ -322,13 +322,13 @@ export default function ReportsPage() {
         </CardHeader>
         <CardContent className="pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-            <div className="space-y-1">
+            <div className="space-y-1 w-[150px]">
               <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">วันที่</label>
               <div className="relative">
-                <CalendarIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                 <Input
                   type="date"
-                  className="h-9 pl-9 text-xs bg-background rounded-lg border-muted-foreground/20 w-full"
+                  className="h-9 pl-9 text-[11px] bg-background rounded-lg border-muted-foreground/20"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
                 />

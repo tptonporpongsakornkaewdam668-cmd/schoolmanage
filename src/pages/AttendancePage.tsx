@@ -287,11 +287,11 @@ export default function AttendancePage() {
                 </SelectContent>
               </Select>
 
-              <div className="relative w-full sm:w-[180px]">
+              <div className="relative w-[150px]">
                 <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                 <Input
                   type="date"
-                  className="h-9 pl-9 text-xs bg-background rounded-lg border-muted-foreground/20"
+                  className="h-9 pl-9 text-[11px] bg-background rounded-lg border-muted-foreground/20"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                 />
