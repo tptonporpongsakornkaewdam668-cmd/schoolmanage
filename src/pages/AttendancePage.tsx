@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Save, Search, Loader2 } from 'lucide-react';
+import { Save, Search, Loader2, Calendar as CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getStudentsByClassroom, getClassrooms, getSubjects, saveAttendanceRecords } from '@/lib/services';
 import { Student, Classroom, Subject, AttendanceStatus, STATUS_CONFIG } from '@/lib/types';
@@ -287,7 +287,15 @@ export default function AttendancePage() {
                 </SelectContent>
               </Select>
 
-              <Input type="date" className="w-full sm:w-[200px]" value={date} onChange={(e) => setDate(e.target.value)} />
+              <div className="relative w-full sm:w-[180px]">
+                <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  type="date"
+                  className="h-9 pl-9 text-xs bg-background rounded-lg border-muted-foreground/20"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                />
+              </div>
             </>
           )}
         </CardContent>

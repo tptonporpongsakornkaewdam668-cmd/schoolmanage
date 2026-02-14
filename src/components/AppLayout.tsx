@@ -13,6 +13,7 @@ import {
   GraduationCap,
   FileText,
   Menu,
+  HelpCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TermSelector } from './TermSelector';
@@ -46,6 +47,7 @@ const teacherNavItems = [
   { icon: Calendar, label: 'ตารางสอน', path: '/timetable' },
   { icon: FileText, label: 'รายงาน', path: '/reports' },
   { icon: Settings, label: 'ตั้งค่า', path: '/settings' },
+  { icon: HelpCircle, label: 'คู่มือการใช้งาน', path: '/guide' },
 ];
 
 const studentNavItems = [

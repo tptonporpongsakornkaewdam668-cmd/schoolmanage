@@ -9,7 +9,7 @@ import { getAttendanceRecords, getSubjects, getClassrooms, getStudents, updateAt
 import { AttendanceRecord, Subject, Classroom, Student, AttendanceStatus, STATUS_CONFIG } from '@/lib/types';
 import { format as formatDate, parseISO } from 'date-fns';
 import { th } from 'date-fns/locale';
-import { Loader2, Save, PenLine, Filter, X, Eye, ArrowUpDown, Trash, Download, MapPin } from 'lucide-react';
+import { Loader2, Save, PenLine, Filter, X, Eye, ArrowUpDown, Trash, Download, MapPin, Calendar as CalendarIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -322,14 +322,17 @@ export default function ReportsPage() {
         </CardHeader>
         <CardContent className="pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">วันที่</label>
-              <Input
-                type="date"
-                className="w-full"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-              />
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">วันที่</label>
+              <div className="relative">
+                <CalendarIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  type="date"
+                  className="h-9 pl-9 text-xs bg-background rounded-lg border-muted-foreground/20 w-full"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">ห้องเรียน</label>

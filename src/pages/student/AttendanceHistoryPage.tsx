@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTerm } from '@/lib/termContext';
 import { getSubjects, getAttendanceRecords, getClassrooms } from '@/lib/services';
 import { Subject, AttendanceRecord, STATUS_CONFIG, AttendanceStatus, Classroom } from '@/lib/types';
-import { Search, Filter, Calendar as MapPin, Loader2, Download, GraduationCap } from 'lucide-react';
+import { Search, Filter, MapPin, Loader2, Download, GraduationCap, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function AttendanceHistoryPage() {
@@ -94,9 +94,6 @@ export default function AttendanceHistoryPage() {
                     <h1 className="text-2xl font-bold">ประวัติการเข้าเรียน</h1>
                     <p className="text-sm text-muted-foreground">ตรวจสอบประวัติการเช็คชื่อทั้งหมดของคุณ</p>
                 </div>
-                <Button variant="outline" size="sm">
-                    <Download className="mr-2 h-4 w-4" /> Export ประวัติ
-                </Button>
             </div>
 
             {/* Filters */}
@@ -123,19 +120,32 @@ export default function AttendanceHistoryPage() {
                                 ))}
                             </SelectContent>
                         </Select>
-                        <div className="grid grid-cols-2 gap-2 lg:contents">
-                            <Input
-                                type="date"
-                                className="w-full"
-                                value={startDate}
-                                onChange={e => setStartDate(e.target.value)}
-                            />
-                            <Input
-                                type="date"
-                                className="w-full"
-                                value={endDate}
-                                onChange={e => setEndDate(e.target.value)}
-                            />
+                        <div className="flex items-center gap-2 sm:col-span-2 lg:col-span-2">
+                            <div className="space-y-1 flex-1">
+                                <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">จากวันที่</label>
+                                <div className="relative">
+                                    <CalendarIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                                    <Input
+                                        type="date"
+                                        className="h-9 pl-9 text-xs bg-background rounded-lg border-muted-foreground/20"
+                                        value={startDate}
+                                        onChange={e => setStartDate(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                            <span className="text-muted-foreground text-xs font-bold mt-auto">ถึง</span>
+                            <div className="space-y-1 flex-1">
+                                <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">ถึงวันที่</label>
+                                <div className="relative">
+                                    <CalendarIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                                    <Input
+                                        type="date"
+                                        className="h-9 pl-9 text-xs bg-background rounded-lg border-muted-foreground/20"
+                                        value={endDate}
+                                        onChange={e => setEndDate(e.target.value)}
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </CardContent>

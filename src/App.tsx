@@ -26,6 +26,7 @@ import MySubjectsPage from "./pages/student/MySubjectsPage";
 import ScanQRPage from "./pages/student/ScanQRPage";
 import AttendanceHistoryPage from "./pages/student/AttendanceHistoryPage";
 import ChangePasswordPage from "./pages/student/ChangePasswordPage";
+import AdminGuidePage from "./pages/AdminGuidePage";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,7 @@ const App = () => (
                 <Route path="/timetable" element={<AppLayout><TimetablePage /></AppLayout>} />
                 <Route path="/reports" element={<AppLayout><ReportsPage /></AppLayout>} />
                 <Route path="/settings" element={<AppLayout><SettingsPage /></AppLayout>} />
+                <Route path="/guide" element={<AppLayout><AdminGuidePage /></AppLayout>} />
 
                 {/* Student Routes */}
                 <Route path="/my-subjects" element={<AppLayout><MySubjectsPage /></AppLayout>} />
