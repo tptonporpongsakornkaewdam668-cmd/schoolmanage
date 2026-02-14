@@ -90,10 +90,10 @@ export default function StudentDashboard() {
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold">{currentUser?.name}</h1>
-                        <p className="text-muted-foreground flex items-center gap-2">
+                        <div className="text-muted-foreground flex items-center gap-2 text-sm">
                             <Badge variant="outline">{currentUser?.username}</Badge>
                             {classroom && <span>ห้อง {classroom.name}</span>}
-                        </p>
+                        </div>
                     </div>
                 </div>
                 <div className="text-right hidden md:block">
