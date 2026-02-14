@@ -48,6 +48,7 @@ const teacherNavItems = [
   { icon: GraduationCap, label: 'ห้องเรียน', path: '/classrooms' },
   { icon: Calendar, label: 'ตารางสอน', path: '/timetable' },
   { icon: Bell, label: 'แจ้งเตือน', path: '/announcements' },
+  { icon: QrCode, label: 'พิมพ์ QR Code', path: '/student-qrcodes' },
   { icon: FileText, label: 'รายงาน', path: '/reports' },
   { icon: Settings, label: 'ตั้งค่า', path: '/settings' },
   { icon: HelpCircle, label: 'คู่มือการใช้งาน', path: '/guide' },

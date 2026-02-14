@@ -12,6 +12,7 @@ import SubjectsPage from "./pages/SubjectsPage";
 import SubjectDetailsPage from "./pages/SubjectDetailsPage";
 import TimetablePage from "./pages/TimetablePage";
 import ReportsPage from "./pages/ReportsPage";
+import StudentQRCodesPage from "./pages/StudentQRCodesPage";
 import SettingsPage from "./pages/SettingsPage";
 import ClassroomsPage from "./pages/ClassroomsPage";
 import ClassroomDetailsPage from "./pages/ClassroomDetailsPage";
@@ -59,6 +60,7 @@ const App = () => (
                 <Route path="/classrooms/:id" element={<AppLayout><ClassroomDetailsPage /></AppLayout>} />
                 <Route path="/timetable" element={<AppLayout><TimetablePage /></AppLayout>} />
                 <Route path="/reports" element={<AppLayout><ReportsPage /></AppLayout>} />
+                <Route path="/student-qrcodes" element={<AppLayout><StudentQRCodesPage /></AppLayout>} />
                 <Route path="/settings" element={<AppLayout><SettingsPage /></AppLayout>} />
                 <Route path="/announcements" element={<AppLayout><AnnouncementsPage /></AppLayout>} />
                 <Route path="/guide" element={<AppLayout><AdminGuidePage /></AppLayout>} />

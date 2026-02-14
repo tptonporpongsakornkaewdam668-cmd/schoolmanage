@@ -232,83 +232,110 @@ export default function ReportsPage() {
   });
 
   const handleExport = () => {
-    if (!gridViewData && !selectedDate) return; // If gridViewData is null and no specific date is selected, there's nothing to export.
+    if (!gridViewData && !selectedDate) return;
 
-    let csvContent = "";
+    // Import xlsx dynamically
+    import('xlsx').then((XLSX) => {
+      let worksheetData: any[][] = [];
 
-    if (!selectedDate) {
-      // --- Export Grid View ---
-      const headers = ['ลำดับ', 'รหัสนักเรียน', 'ชื่อ-สกุล', ...gridViewData.uniqueDates.map(d => formatDisplayDate(d)), 'มา', 'สาย', 'ลา', 'ป่วย', 'ขาด', 'กิจกรรม'].join(',');
-      csvContent += "\uFEFF" + headers + "\n"; // Add BOM
+      if (!selectedDate) {
+        // --- Export Grid View ---
+        const headers = ['ลำดับ', 'รหัสนักเรียน', 'ชื่อ-สกุล', ...gridViewData.uniqueDates.map(d => formatDisplayDate(d)), 'มา', 'สาย', 'ลา', 'ป่วย', 'ขาด', 'กิจกรรม'];
+        worksheetData.push(headers);
 
-      gridViewData.filteredStudents.forEach((student, index) => {
-        const row = [
-          index + 1,
-          `"${student.studentCode}"`, // Quote to prevent Excel formating as number
-          `"${student.fullName}"`
-        ];
+        gridViewData.filteredStudents.forEach((student, index) => {
+          const row: any[] = [
+            index + 1,
+            student.studentCode,
+            student.fullName
+          ];
 
-        const stats = { present: 0, late: 0, leave: 0, sick: 0, absent: 0, activity: 0 };
+          const stats = { present: 0, late: 0, leave: 0, sick: 0, absent: 0, activity: 0 };
 
-        // Dates
-        gridViewData.uniqueDates.forEach(date => {
-          const records = gridViewData.map[student.id]?.[date] || [];
-          if (records.length > 0) {
-            const worstStatus = getWorstStatus(records);
-            stats[worstStatus as keyof typeof stats] = (stats[worstStatus as keyof typeof stats] || 0) + 1;
-            const label = getStatusInfo(worstStatus).label;
-            // Add note if exists
-            const note = records.map(r => r.note).filter(Boolean).join(' ');
-            row.push(`"${label}${note ? ` (${note})` : ''}"`);
-          } else {
-            row.push("-");
-          }
+          // Dates
+          gridViewData.uniqueDates.forEach(date => {
+            const records = gridViewData.map[student.id]?.[date] || [];
+            if (records.length > 0) {
+              const worstStatus = getWorstStatus(records);
+              stats[worstStatus as keyof typeof stats] = (stats[worstStatus as keyof typeof stats] || 0) + 1;
+              const label = getStatusInfo(worstStatus).label;
+              const note = records.map(r => r.note).filter(Boolean).join(' ');
+              row.push(`${label}${note ? ` (${note})` : ''}`);
+            } else {
+              row.push("-");
+            }
+          });
+
+          // Summary Stats
+          row.push(stats.present, stats.late, stats.leave, stats.sick, stats.absent, stats.activity);
+          worksheetData.push(row);
         });
 
-        // Summary Stats
-        row.push(stats.present, stats.late, stats.leave, stats.sick, stats.absent, stats.activity);
+      } else {
+        // --- Export List View ---
+        const headers = ['วันที่', 'รหัสนักเรียน', 'ชื่อ-สกุล', 'วิชา', 'ห้องเรียน', 'สถานะ', 'หมายเหตุ', 'พิกัด GPS', 'เบราว์เซอร์', 'OS', 'Device ID'];
+        worksheetData.push(headers);
 
-        csvContent += row.join(',') + "\n";
+        filteredAttendanceList.forEach(record => {
+          const lat = record.location?.latitude ?? (record.location as any)?.lat;
+          const lng = record.location?.longitude ?? (record.location as any)?.lng;
+          const locationStr = lat !== undefined && lng !== undefined ? `${lat},${lng}` : '';
+          const browser = (record as any).deviceInfo?.browser || '-';
+          const os = (record as any).deviceInfo?.os || '-';
+          const deviceId = (record as any).deviceInfo?.deviceId || (record as any).fingerprint || '-';
+
+          const row = [
+            formatDisplayDate(record.date),
+            getStudentCode(record.studentId),
+            getStudentName(record.studentId),
+            getSubjectName(record.subjectId),
+            getClassroomName(record.classroomId),
+            getStatusInfo(record.status).label,
+            record.note || '',
+            locationStr,
+            browser,
+            os,
+            deviceId
+          ];
+          worksheetData.push(row);
+        });
+      }
+
+      // Create workbook and worksheet
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+
+      // Set column widths
+      const colWidths = worksheetData[0].map((_, i) => {
+        const maxLength = Math.max(...worksheetData.map(row => {
+          const cellValue = row[i]?.toString() || '';
+          return cellValue.length;
+        }));
+        return { wch: Math.min(Math.max(maxLength + 2, 10), 50) };
       });
+      worksheet['!cols'] = colWidths;
 
-    } else {
-      // --- Export List View ---
-      const headers = ['วันที่', 'รหัสนักเรียน', 'ชื่อ-สกุล', 'วิชา', 'ห้องเรียน', 'สถานะ', 'หมายเหตุ', 'พิกัด GPS', 'เบราว์เซอร์', 'OS', 'Device ID'].join(',');
-      csvContent += "\uFEFF" + headers + "\n";
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance Report');
 
-      filteredAttendanceList.forEach(record => {
-        const lat = record.location?.latitude ?? (record.location as any)?.lat;
-        const lng = record.location?.longitude ?? (record.location as any)?.lng;
-        const locationStr = lat !== undefined && lng !== undefined ? `${lat},${lng}` : '';
-        const browser = (record as any).deviceInfo?.browser || '-';
-        const os = (record as any).deviceInfo?.os || '-';
-        const deviceId = (record as any).deviceInfo?.deviceId || (record as any).fingerprint || '-';
-        const row = [
-          `"${formatDisplayDate(record.date)}"`,
-          `"${getStudentCode(record.studentId)}"`,
-          `"${getStudentName(record.studentId)}"`,
-          `"${getSubjectName(record.subjectId)}"`,
-          `"${getClassroomName(record.classroomId)}"`,
-          `"${getStatusInfo(record.status).label}"`,
-          `"${record.note || ''}"`,
-          `"${locationStr}"`,
-          `"${browser}"`,
-          `"${os}"`,
-          `"${deviceId}"`
-        ];
-        csvContent += row.join(',') + "\n";
+      // Generate file name
+      const fileName = `attendance_report_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+      // Download file
+      XLSX.writeFile(workbook, fileName);
+
+      toast({
+        title: 'ส่งออกสำเร็จ',
+        description: `ดาวน์โหลดไฟล์ ${fileName} เรียบร้อยแล้ว`,
       });
-    }
-
-    // Create Download Link
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `attendance_report_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    }).catch(err => {
+      console.error('Failed to load xlsx library:', err);
+      toast({
+        title: 'เกิดข้อผิดพลาด',
+        description: 'ไม่สามารถส่งออกไฟล์ได้',
+        variant: 'destructive',
+      });
+    });
   };
 
   return (
@@ -390,7 +417,7 @@ export default function ReportsPage() {
               ล้างตัวกรอง
             </Button>
             <Button variant="default" onClick={handleExport} className="w-full lg:col-span-3 bg-green-600 hover:bg-green-700 text-white">
-              <Download className="mr-2 h-4 w-4" /> ส่งออก Excel (CSV)
+              <Download className="mr-2 h-4 w-4" /> ส่งออก Excel
             </Button>
           </div>
         </CardContent>
