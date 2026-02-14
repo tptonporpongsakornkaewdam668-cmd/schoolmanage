@@ -26,7 +26,10 @@ import MySubjectsPage from "./pages/student/MySubjectsPage";
 import ScanQRPage from "./pages/student/ScanQRPage";
 import AttendanceHistoryPage from "./pages/student/AttendanceHistoryPage";
 import ChangePasswordPage from "./pages/student/ChangePasswordPage";
+import AssignmentsPage from "./pages/student/AssignmentsPage";
 import AdminGuidePage from "./pages/AdminGuidePage";
+import AnnouncementsPage from "./pages/AnnouncementsPage";
+
 
 const queryClient = new QueryClient();
 
@@ -57,12 +60,15 @@ const App = () => (
                 <Route path="/timetable" element={<AppLayout><TimetablePage /></AppLayout>} />
                 <Route path="/reports" element={<AppLayout><ReportsPage /></AppLayout>} />
                 <Route path="/settings" element={<AppLayout><SettingsPage /></AppLayout>} />
+                <Route path="/announcements" element={<AppLayout><AnnouncementsPage /></AppLayout>} />
                 <Route path="/guide" element={<AppLayout><AdminGuidePage /></AppLayout>} />
+
 
                 {/* Student Routes */}
                 <Route path="/my-subjects" element={<AppLayout><MySubjectsPage /></AppLayout>} />
                 <Route path="/scan-qr" element={<AppLayout><ScanQRPage /></AppLayout>} />
                 <Route path="/attendance-history" element={<AppLayout><AttendanceHistoryPage /></AppLayout>} />
+                <Route path="/assignments" element={<AppLayout><AssignmentsPage /></AppLayout>} />
               </Route>
 
               <Route path="*" element={<NotFound />} />

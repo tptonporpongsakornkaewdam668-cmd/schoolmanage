@@ -18,6 +18,8 @@ import { getTimetable, getDashboardData } from '@/lib/services';
 import { TimetableEntry, AttendanceSummary, STATUS_CONFIG, AttendanceStatus } from '@/lib/types';
 import { useNavigate } from 'react-router-dom';
 import { useTerm } from '@/lib/termContext';
+import { RealTimeClock } from '@/components/RealTimeClock';
+
 
 
 
@@ -109,19 +111,21 @@ export default function Dashboard() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">แดชบอร์ด</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground flex items-center gap-2">
             ภาคเรียนที่ 1/2568 · {dayNames[dayOfWeek]}ที่{' '}
             {today.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-3">
+          <RealTimeClock />
           <Input
             type="date"
-            className="w-auto"
+            className="w-auto shadow-sm"
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
         </div>
+
       </div>
 
       {/* Stats */}

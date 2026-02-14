@@ -175,7 +175,7 @@ export default function AttendanceHistoryPage() {
                                                 <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mt-0.5">
                                                     <span>{new Date(record.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                                                     <span>•</span>
-                                                    <span>คาบที่ {record.period}</span>
+                                                    <span>{record.period === 0 ? 'กิจกรรม/โฮมรูม' : `คาบที่ ${record.period}`}</span>
                                                     <span>•</span>
                                                     <span className="flex items-center gap-1">
                                                         <GraduationCap className="h-3 w-3" />

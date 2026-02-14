@@ -1,6 +1,6 @@
 import { db } from './firebase';
 import { collection, getDocs, doc, getDoc, query, where, addDoc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
-import { Student, Classroom, Subject, TimetableEntry, AttendanceSummary, AttendanceStatus, AcademicYear, PeriodConfig, Term, Assignment, StudentScore, AttendanceRecord, QRSession, SystemSettings, AppUser } from './types';
+import { Student, Classroom, Subject, TimetableEntry, AttendanceSummary, AttendanceStatus, AcademicYear, PeriodConfig, Term, Assignment, StudentScore, AttendanceRecord, QRSession, SystemSettings, AppUser, Announcement } from './types';
 
 // Collection references
 const studentsRef = collection(db, 'students');
@@ -15,6 +15,8 @@ const assignmentsRef = collection(db, 'assignments');
 const scoresRef = collection(db, 'scores');
 const usersRef = collection(db, 'users');
 const settingsRef = collection(db, 'settings');
+const announcementsRef = collection(db, 'announcements');
+
 
 // Students
 export const getStudentById = async (id: string): Promise<Student | null> => {
@@ -867,6 +869,11 @@ export const deleteAssignment = async (id: string) => {
     return await deleteDoc(docRef);
 };
 
+export const updateAssignment = async (id: string, assignment: Partial<Assignment>): Promise<void> => {
+    const docRef = doc(db, 'assignments', id);
+    await updateDoc(docRef, assignment as any);
+};
+
 export const getScoresBySubject = async (subjectId: string): Promise<StudentScore[]> => {
     // Ideally filter by assignments of subject. But for simplicity, we might filter client side or query differently.
     // If we want efficient query: get assignments -> get scores for those assignments.
@@ -1002,3 +1009,58 @@ export const updateUser = async (id: string, data: Partial<AppUser>): Promise<vo
 
 import bcrypt from 'bcryptjs';
 import { setDoc } from 'firebase/firestore';
+
+// Announcements
+export const getAnnouncements = async (): Promise<Announcement[]> => {
+    const snapshot = await getDocs(announcementsRef);
+    const announcements = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as any } as Announcement));
+    return announcements.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+};
+
+export const addAnnouncement = async (announcement: Omit<Announcement, 'id'>) => {
+    return await addDoc(announcementsRef, {
+        ...announcement,
+        createdAt: new Date().toISOString()
+    });
+};
+
+export const updateAnnouncement = async (id: string, announcement: Partial<Announcement>) => {
+    const docRef = doc(db, 'announcements', id);
+    return await updateDoc(docRef, announcement);
+};
+
+export const deleteAnnouncement = async (id: string) => {
+    const docRef = doc(db, 'announcements', id);
+    return await deleteDoc(docRef);
+};
+
+export const getActiveAnnouncements = async (classroomId?: string): Promise<Announcement[]> => {
+    const now = new Date();
+    const currentDate = now.toISOString().split('T')[0];
+    const currentTime = now.toTimeString().split(' ')[0].substring(0, 5); // HH:mm
+
+    const q = query(announcementsRef, where('isActive', '==', true));
+    const snapshot = await getDocs(q);
+    const announcements = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as any } as Announcement));
+
+    return announcements.filter(a => {
+        // Date strings are in YYYY-MM-DD format, so simple comparison works
+        const startDate = a.startDate;
+        const endDate = a.endDate;
+
+        if (currentDate < startDate || currentDate > endDate) return false;
+
+        // If it's the start date, check time
+        if (currentDate === startDate && currentTime < a.startTime) return false;
+
+        // If it's the end date, check time
+        if (currentDate === endDate && currentTime > a.endTime) return false;
+
+        // Check classroom target
+        if (a.targetClassroomIds.includes('all')) return true;
+        if (classroomId && a.targetClassroomIds.includes(classroomId)) return true;
+
+        return false;
+    });
+};
+

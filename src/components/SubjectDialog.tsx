@@ -35,6 +35,7 @@ export function SubjectDialog({ classrooms, periods, onSave }: SubjectDialogProp
     const [formData, setFormData] = useState({
         code: '',
         name: '',
+        logoUrl: '',
         classrooms: [] as string[]
     });
     const [schedules, setSchedules] = useState<SubjectSchedule[]>([]);
@@ -60,7 +61,7 @@ export function SubjectDialog({ classrooms, periods, onSave }: SubjectDialogProp
                 termId: activeTerm.id
             });
             setOpen(false);
-            setFormData({ code: '', name: '', classrooms: [] });
+            setFormData({ code: '', name: '', logoUrl: '', classrooms: [] });
             setSchedules([]);
             toast({ title: "เพิ่มวิชาสำเร็จ" });
         } catch (error) {
@@ -116,7 +117,7 @@ export function SubjectDialog({ classrooms, periods, onSave }: SubjectDialogProp
                     <DialogTitle>เพิ่มรายวิชาใหม่</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="code">รหัสวิชา</Label>
                             <Input
@@ -133,6 +134,15 @@ export function SubjectDialog({ classrooms, periods, onSave }: SubjectDialogProp
                                 required
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="logoUrl">URL โลโก้วิชา (ถ้ามี)</Label>
+                            <Input
+                                id="logoUrl"
+                                value={formData.logoUrl}
+                                onChange={(e) => setFormData({ ...formData, logoUrl: e.target.value })}
+                                placeholder="https://example.com/logo.png"
                             />
                         </div>
                     </div>

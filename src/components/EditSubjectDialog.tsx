@@ -33,6 +33,7 @@ export function EditSubjectDialog({ subject, classrooms, onSave }: EditSubjectDi
     const [formData, setFormData] = useState({
         code: subject.code,
         name: subject.name,
+        logoUrl: subject.logoUrl || '',
         classrooms: subject.classrooms
     });
     const [schedules, setSchedules] = useState<SubjectSchedule[]>(subject.schedules || []);
@@ -47,6 +48,7 @@ export function EditSubjectDialog({ subject, classrooms, onSave }: EditSubjectDi
             setFormData({
                 code: subject.code,
                 name: subject.name,
+                logoUrl: subject.logoUrl || '',
                 classrooms: subject.classrooms
             });
             setSchedules(subject.schedules || []);
@@ -113,7 +115,7 @@ export function EditSubjectDialog({ subject, classrooms, onSave }: EditSubjectDi
                     <DialogTitle>แก้ไขรายวิชา</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="edit-code">รหัสวิชา</Label>
                             <Input
@@ -130,6 +132,15 @@ export function EditSubjectDialog({ subject, classrooms, onSave }: EditSubjectDi
                                 required
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-logoUrl">URL โลโก้วิชา (ถ้ามี)</Label>
+                            <Input
+                                id="edit-logoUrl"
+                                value={formData.logoUrl}
+                                onChange={(e) => setFormData({ ...formData, logoUrl: e.target.value })}
+                                placeholder="https://example.com/logo.png"
                             />
                         </div>
                     </div>

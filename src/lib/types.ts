@@ -81,7 +81,9 @@ export interface Subject {
     id: string;
     code: string;
     name: string;
+    logoUrl?: string;
     classrooms: string[];
+
     teachers?: string[]; // Teacher names or IDs
     schedules?: SubjectSchedule[];
     gradingConfig?: GradeConfig[]; // Custom grading for this subject
@@ -135,6 +137,7 @@ export interface Assignment {
     title: string;
     maxScore: number;
     description?: string;
+    link?: string;
     createdAt?: string;
     termId: string; // Required - data is separated by term
     startDate?: string;
@@ -192,3 +195,20 @@ export interface QRSession {
     };
     createdAt: string;
 }
+
+export interface Announcement {
+    id: string;
+    title: string;
+    content: string;
+    type: 'info' | 'important' | 'warning' | 'success';
+    targetClassroomIds: string[]; // ['all'] for all classrooms
+    startDate: string; // ISO date string (YYYY-MM-DD)
+    startTime: string; // HH:mm
+    endDate: string; // ISO date string (YYYY-MM-DD)
+    endTime: string; // HH:mm
+    isActive: boolean;
+    displayMode: 'once' | 'always';
+    createdAt: string;
+}
+
+

@@ -6,16 +6,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Plus, Save, Trash, FileDown, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, Save, Trash, FileDown, Loader2, Settings } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import {
     getSubjects, getStudentsByClassroom, getAssignmentsBySubject,
-    addAssignment, deleteAssignment, getScoresByAssignment, saveScore,
+    addAssignment, deleteAssignment, updateAssignment, getScoresByAssignment, saveScore,
     getGradeConfigs, updateSubject, getClassrooms, getStudents // Added getClassrooms, getStudents
 } from '@/lib/services';
 import { Subject, Student, Assignment, StudentScore, GradeConfig, Classroom } from '@/lib/types'; // Added Classroom
 import * as XLSX from 'xlsx';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { useTerm } from '@/lib/termContext';
 
@@ -139,7 +139,9 @@ export default function SubjectDetailsPage() {
 
     // Add Assignment Dialog State
     const [isAddOpen, setIsAddOpen] = useState(false);
-    const [newAssignment, setNewAssignment] = useState({ title: '', maxScore: '', startDate: '', dueDate: '', dueTime: '' });
+    const [newAssignment, setNewAssignment] = useState({ title: '', maxScore: '', description: '', link: '', startDate: '', dueDate: '', dueTime: '' });
+    const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(null);
+    const [isEditOpen, setIsEditOpen] = useState(false);
     const [savingAssignment, setSavingAssignment] = useState(false);
 
     const [gradeConfigs, setGradeConfigs] = useState<GradeConfig[]>([]);
@@ -224,6 +226,8 @@ export default function SubjectDetailsPage() {
                 subjectId: id,
                 title: newAssignment.title,
                 maxScore: Number(newAssignment.maxScore),
+                description: newAssignment.description,
+                link: newAssignment.link,
                 termId: activeTerm.id,
                 startDate: newAssignment.startDate || undefined,
                 dueDate: newAssignment.dueDate || undefined,
@@ -231,12 +235,50 @@ export default function SubjectDetailsPage() {
             });
             toast({ title: "เพิ่มงานสำเร็จ" });
             setIsAddOpen(false);
-            setNewAssignment({ title: '', maxScore: '', startDate: '', dueDate: '', dueTime: '' });
+            setNewAssignment({ title: '', maxScore: '', description: '', link: '', startDate: '', dueDate: '', dueTime: '' });
             loadData(); // Reload to show new column
         } catch (e) {
             toast({ title: "เกิดข้อผิดพลาด", variant: "destructive" });
         } finally {
             setSavingAssignment(false);
+        }
+    };
+
+    const handleEditAssignment = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingAssignment || !activeTerm) return;
+
+        setSavingAssignment(true);
+        try {
+            await updateAssignment(editingAssignment.id, {
+                title: editingAssignment.title,
+                maxScore: Number(editingAssignment.maxScore),
+                description: editingAssignment.description,
+                link: editingAssignment.link,
+                startDate: editingAssignment.startDate || undefined,
+                dueDate: editingAssignment.dueDate || undefined,
+                dueTime: editingAssignment.dueTime || undefined
+            });
+            toast({ title: "แก้ไขงานสำเร็จ" });
+            setIsEditOpen(false);
+            setEditingAssignment(null);
+            loadData();
+        } catch (e) {
+            toast({ title: "เกิดข้อผิดพลาด", variant: "destructive" });
+        } finally {
+            setSavingAssignment(false);
+        }
+    };
+
+    const handleDeleteAssignment = async (assignmentId: string) => {
+        if (!confirm("คุณแน่ใจหรือไม่ว่าต้องการลบงานนี้? คะแนนทั้งหมดในงานนี้จะถูกลบไปด้วย (หากมี)")) return;
+
+        try {
+            await deleteAssignment(assignmentId);
+            toast({ title: "ลบงานสำเร็จ" });
+            loadData();
+        } catch (e) {
+            toast({ title: "เกิดข้อผิดพลาดในการลบงาน", variant: "destructive" });
         }
     };
 
@@ -380,6 +422,7 @@ export default function SubjectDetailsPage() {
                         <DialogContent>
                             <DialogHeader>
                                 <DialogTitle>เพิ่มงานใหม่</DialogTitle>
+                                <DialogDescription>กรอกข้อมูลรายละเอียดงานที่ต้องการมอบหมายให้แก่นักเรียน</DialogDescription>
                             </DialogHeader>
                             <form onSubmit={handleAddAssignment} className="space-y-4">
                                 <div className="space-y-2">
@@ -389,6 +432,24 @@ export default function SubjectDetailsPage() {
                                         value={newAssignment.title}
                                         onChange={e => setNewAssignment({ ...newAssignment, title: e.target.value })}
                                         required
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="description">รายละเอียดงาน</Label>
+                                    <Input
+                                        id="description"
+                                        value={newAssignment.description}
+                                        onChange={e => setNewAssignment({ ...newAssignment, description: e.target.value })}
+                                        placeholder="คำอธิบายเพิ่มเติมเกี่ยวกับงาน"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="link">ลิงก์แนบ (เช่น Google Drive, YouTube)</Label>
+                                    <Input
+                                        id="link"
+                                        value={newAssignment.link}
+                                        onChange={e => setNewAssignment({ ...newAssignment, link: e.target.value })}
+                                        placeholder="https://..."
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -438,6 +499,91 @@ export default function SubjectDetailsPage() {
                             </form>
                         </DialogContent>
                     </Dialog>
+
+                    <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>แก้ไขงาน</DialogTitle>
+                                <DialogDescription>แก้ไขข้อมูลหรือลบงานที่ต้องการจัดการ</DialogDescription>
+                            </DialogHeader>
+                            {editingAssignment && (
+                                <form onSubmit={handleEditAssignment} className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="edit-title">ชื่องาน</Label>
+                                        <Input
+                                            id="edit-title"
+                                            value={editingAssignment.title}
+                                            onChange={e => setEditingAssignment({ ...editingAssignment, title: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="edit-description">รายละเอียดงาน</Label>
+                                        <Input
+                                            id="edit-description"
+                                            value={editingAssignment.description || ''}
+                                            onChange={e => setEditingAssignment({ ...editingAssignment, description: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="edit-link">ลิงก์แนบ</Label>
+                                        <Input
+                                            id="edit-link"
+                                            value={editingAssignment.link || ''}
+                                            onChange={e => setEditingAssignment({ ...editingAssignment, link: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="edit-maxScore">คะแนนเต็ม</Label>
+                                        <Input
+                                            id="edit-maxScore"
+                                            type="number"
+                                            value={editingAssignment.maxScore}
+                                            onChange={e => setEditingAssignment({ ...editingAssignment, maxScore: Number(e.target.value) })}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="edit-startDate">วันที่สั่งงาน</Label>
+                                            <Input
+                                                id="edit-startDate"
+                                                type="date"
+                                                value={editingAssignment.startDate || ''}
+                                                onChange={e => setEditingAssignment({ ...editingAssignment, startDate: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="edit-dueDate">กำหนดส่ง (วันที่)</Label>
+                                            <Input
+                                                id="edit-dueDate"
+                                                type="date"
+                                                value={editingAssignment.dueDate || ''}
+                                                onChange={e => setEditingAssignment({ ...editingAssignment, dueDate: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="edit-dueTime">กำหนดส่ง (เวลา)</Label>
+                                        <Input
+                                            id="edit-dueTime"
+                                            type="time"
+                                            value={editingAssignment.dueTime || ''}
+                                            onChange={e => setEditingAssignment({ ...editingAssignment, dueTime: e.target.value })}
+                                        />
+                                    </div>
+                                    <DialogFooter className="flex justify-between sm:justify-between items-center sm:gap-0">
+                                        <Button type="button" variant="destructive" onClick={() => handleDeleteAssignment(editingAssignment.id)}>
+                                            <Trash className="mr-2 h-4 w-4" /> ลบงาน
+                                        </Button>
+                                        <Button type="submit" disabled={savingAssignment}>
+                                            {savingAssignment && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} บันทึกการแก้ไข
+                                        </Button>
+                                    </DialogFooter>
+                                </form>
+                            )}
+                        </DialogContent>
+                    </Dialog>
                     <Button onClick={handleSaveScores} disabled={loading} className="bg-green-600 hover:bg-green-700">
                         <Save className="mr-2 h-4 w-4" /> บันทึกคะแนน
                     </Button>
@@ -469,7 +615,7 @@ export default function SubjectDetailsPage() {
                                             <th className="px-4 py-3 text-left font-medium">รหัสนักเรียน</th>
                                             <th className="px-4 py-3 text-left font-medium">ชื่อ-นามสกุล</th>
                                             {assignments.map(asm => (
-                                                <th key={asm.id} className="px-4 py-3 text-center font-medium min-w-[120px]">
+                                                <th key={asm.id} className="px-4 py-3 text-center font-medium min-w-[120px] group/header relative">
                                                     <div className="flex flex-col items-center">
                                                         <span className="font-bold">{asm.title}</span>
                                                         <span className="text-xs text-muted-foreground">({asm.maxScore} คะแนน)</span>
@@ -479,6 +625,17 @@ export default function SubjectDetailsPage() {
                                                                 {asm.dueTime && ` ${asm.dueTime}`}
                                                             </span>
                                                         )}
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-6 w-6 absolute -top-1 -right-1 opacity-0 group-hover/header:opacity-100 transition-opacity bg-background border"
+                                                            onClick={() => {
+                                                                setEditingAssignment(asm);
+                                                                setIsEditOpen(true);
+                                                            }}
+                                                        >
+                                                            <Settings className="h-3 w-3" />
+                                                        </Button>
                                                     </div>
                                                 </th>
                                             ))}

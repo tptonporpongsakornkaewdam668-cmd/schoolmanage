@@ -14,6 +14,12 @@ export default function MySubjectsPage() {
     const [loading, setLoading] = useState(true);
     const [subjects, setSubjects] = useState<Subject[]>([]);
     const [attendanceData, setAttendanceData] = useState<Record<string, AttendanceRecord[]>>({});
+    const [now, setNow] = useState(new Date());
+
+    useEffect(() => {
+        const timer = setInterval(() => setNow(new Date()), 30000);
+        return () => clearInterval(timer);
+    }, []);
 
     useEffect(() => {
         if (currentUser?.studentId && activeTerm) {
@@ -86,14 +92,6 @@ export default function MySubjectsPage() {
                                             <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
                                                 <BookOpen className="h-6 w-6" />
                                             </div>
-                                            <div>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-xs font-bold text-primary uppercase tracking-wider">{subject.code}</span>
-                                                    <Badge variant="secondary" className="text-[10px] h-4">วิชาบังคับ</Badge>
-                                                </div>
-                                                <CardTitle className="text-xl">{subject.name}</CardTitle>
-                                                <p className="text-xs text-muted-foreground mt-0.5">ผู้สอน: {subject.teachers?.join(', ') || 'ไม่ระบุ'}</p>
-                                            </div>
                                         </div>
                                         <div className="flex flex-wrap gap-2">
                                             {(Object.keys(STATUS_CONFIG) as AttendanceStatus[]).map(key => {
@@ -127,8 +125,49 @@ export default function MySubjectsPage() {
                                                                 <span className="text-[10px] uppercase font-bold">{['', 'จัน', 'อัง', 'พุธ', 'พฤ', 'ศุก', 'เสาร์', 'อา'][schedule.dayOfWeek]}</span>
                                                             </div>
                                                             <div className="flex-1">
-                                                                <p className="text-sm font-medium">คาบเรียนที่ {schedule.period}</p>
+                                                                <p className="text-sm font-medium">{schedule.period === 0 ? 'วิชาเรียน' : `คาบเรียนที่ ${schedule.period}`}</p>
                                                                 <p className="text-xs text-muted-foreground">{schedule.startTime} - {schedule.endTime}</p>
+                                                                {(() => {
+                                                                    const today = new Date();
+                                                                    const currentDay = today.getDay() === 0 ? 7 : today.getDay();
+                                                                    if (schedule.dayOfWeek !== currentDay) return null;
+
+                                                                    const [startH, startM] = schedule.startTime.split(':').map(Number);
+                                                                    const [endH, endM] = schedule.endTime.split(':').map(Number);
+                                                                    const startTime = new Date(now);
+                                                                    startTime.setHours(startH, startM, 0, 0);
+                                                                    const endTime = new Date(now);
+                                                                    endTime.setHours(endH, endM, 0, 0);
+
+                                                                    if (now < startTime) {
+                                                                        const diffMs = startTime.getTime() - now.getTime();
+                                                                        const diffMins = Math.floor(diffMs / 60000);
+                                                                        const h = Math.floor(diffMins / 60);
+                                                                        const m = diffMins % 60;
+                                                                        return (
+                                                                            <p className="text-[10px] font-bold text-amber-600 mt-1 animate-pulse">
+                                                                                กำลังจะเริ่มในอีก {h > 0 ? `${h} ชม. ` : ''}{m} นาที
+                                                                            </p>
+                                                                        );
+                                                                    } else if (now >= startTime && now <= endTime) {
+                                                                        const diffMs = endTime.getTime() - now.getTime();
+                                                                        const diffMins = Math.floor(diffMs / 60000);
+                                                                        const h = Math.floor(diffMins / 60);
+                                                                        const m = diffMins % 60;
+                                                                        return (
+                                                                            <div className="flex items-center gap-1 mt-1">
+                                                                                <span className="relative flex h-1.5 w-1.5">
+                                                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                                                                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
+                                                                                </span>
+                                                                                <p className="text-[10px] font-bold text-green-600">
+                                                                                    นับถอยหลังเวลาเรียน: {h > 0 ? `${h} ชม. ` : ''}{m} นาที
+                                                                                </p>
+                                                                            </div>
+                                                                        );
+                                                                    }
+                                                                    return null;
+                                                                })()}
                                                             </div>
                                                         </div>
                                                     ))
@@ -148,7 +187,7 @@ export default function MySubjectsPage() {
                                                             <div key={record.id} className="flex items-center justify-between p-3 rounded-lg border">
                                                                 <div>
                                                                     <p className="text-sm font-medium">{new Date(record.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-                                                                    <p className="text-xs text-muted-foreground">คาบที่ {record.period} · {record.checkInTime || 'ไม่ระบุเวลา'}</p>
+                                                                    <p className="text-xs text-muted-foreground">{record.period === 0 ? 'กิจกรรม/โฮมรูม' : `คาบที่ ${record.period}`} · {record.checkInTime || 'ไม่ระบุเวลา'}</p>
                                                                 </div>
                                                                 <div className="text-right">
                                                                     <Badge className={config.bgClass}>{config.label}</Badge>

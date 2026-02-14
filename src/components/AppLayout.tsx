@@ -13,8 +13,10 @@ import {
   GraduationCap,
   FileText,
   Menu,
-  HelpCircle
+  HelpCircle,
+  Bell
 } from 'lucide-react';
+
 import { cn } from '@/lib/utils';
 import { TermSelector } from './TermSelector';
 import { AcademicManagementDialog } from './AcademicManagementDialog';
@@ -45,6 +47,7 @@ const teacherNavItems = [
   { icon: BookOpen, label: 'รายวิชา', path: '/subjects' },
   { icon: GraduationCap, label: 'ห้องเรียน', path: '/classrooms' },
   { icon: Calendar, label: 'ตารางสอน', path: '/timetable' },
+  { icon: Bell, label: 'แจ้งเตือน', path: '/announcements' },
   { icon: FileText, label: 'รายงาน', path: '/reports' },
   { icon: Settings, label: 'ตั้งค่า', path: '/settings' },
   { icon: HelpCircle, label: 'คู่มือการใช้งาน', path: '/guide' },
@@ -54,6 +57,7 @@ const studentNavItems = [
   { icon: LayoutDashboard, label: 'แดชบอร์ด', path: '/' },
   { icon: QrCode, label: 'สแกน QR', path: '/scan-qr' },
   { icon: BookOpen, label: 'วิชาของฉัน', path: '/my-subjects' },
+  { icon: FileText, label: 'งานและคะแนน', path: '/assignments' },
   { icon: History, label: 'ประวัติเข้าเรียน', path: '/attendance-history' },
 ];
 
@@ -100,9 +104,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const navItems = currentUser?.role === 'student'
     ? studentNavItems
     : teacherNavItems.filter(item => {
-      if (item.path === '/settings' && currentUser?.role !== 'admin') return false;
+      if ((item.path === '/settings' || item.path === '/announcements') && currentUser?.role !== 'admin') return false;
       return true;
     });
+
 
   const navigate = (path: string) => {
     // We'll use Link's 'to' so no need for manual navigate here, but just in case
