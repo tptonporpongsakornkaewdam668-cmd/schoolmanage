@@ -222,10 +222,15 @@ export default function AttendancePage() {
   };
 
   return (
-    <div className="space-y-4 animate-fade-in">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold">เช็คชื่อ</h1>
-        <div className="flex gap-2">
+    <div className="space-y-4 sm:space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">เช็คชื่อ</h1>
+        </div>
+
+        {/* Action Buttons - Vertical Stack on Mobile */}
+        <div className="flex flex-col gap-2 sm:flex-row sm:gap-2">
           {selectedSubject && (
             <>
               <QRAttendanceDialog
@@ -253,7 +258,12 @@ export default function AttendancePage() {
               />
             </>
           )}
-          <Button size="sm" onClick={handleSave} disabled={saving || students.length === 0}>
+          <Button
+            size="sm"
+            onClick={handleSave}
+            disabled={saving || students.length === 0}
+            className="w-full sm:w-auto font-bold"
+          >
             {saving ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Save className="mr-1.5 h-4 w-4" />}
             อัปเดตสถานะ
           </Button>
@@ -301,8 +311,8 @@ export default function AttendancePage() {
         </CardContent>
       </Card>
 
-      {/* Summary */}
-      <div className="flex flex-wrap gap-2">
+      {/* Summary - Desktop Only (Top) */}
+      <div className="hidden sm:flex flex-wrap gap-2">
         {statusKeys.map((key) => {
           const config = STATUS_CONFIG[key];
           const count = summary[key];
@@ -392,6 +402,32 @@ export default function AttendancePage() {
               })}
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Summary - Mobile Only (Bottom) - Compact Version */}
+      <Card className="sm:hidden border-0 shadow-sm">
+        <CardContent className="p-3">
+          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">สรุปสถิติการเข้าเรียน</h3>
+          <div className="grid grid-cols-4 gap-1.5">
+            {statusKeys.map((key) => {
+              const config = STATUS_CONFIG[key];
+              const count = summary[key];
+              return (
+                <div
+                  key={key}
+                  className={cn(
+                    'flex flex-col items-center justify-center gap-1 rounded-lg border p-2 text-black',
+                    config.bgClass
+                  )}
+                >
+                  <div className={cn('h-2 w-2 rounded-full', config.dotClass)} />
+                  <span className="text-[9px] font-bold leading-tight text-center">{config.label}</span>
+                  <span className="text-sm font-black">{count}</span>
+                </div>
+              );
+            })}
+          </div>
         </CardContent>
       </Card>
     </div>

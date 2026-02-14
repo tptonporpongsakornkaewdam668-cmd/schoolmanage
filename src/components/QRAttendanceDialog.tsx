@@ -33,6 +33,7 @@ export function QRAttendanceDialog({ subject, period, onSessionCreated }: QRAtte
     const [checkedInStudents, setCheckedInStudents] = useState<any[]>([]);
     const [teacherLocation, setTeacherLocation] = useState<{ lat: number, lng: number } | null>(null);
     const [locStatus, setLocStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [expiryMinutes, setExpiryMinutes] = useState<number>(10); // Default 10 minutes
 
     const [locError, setLocError] = useState<string>('');
 
@@ -95,8 +96,12 @@ export function QRAttendanceDialog({ subject, period, onSessionCreated }: QRAtte
             if (diff <= 0) {
                 setTimeLeft('หมดเวลา');
                 clearInterval(timer);
-                // Optionally deactivate session? 
-                // In reality, the student check will fail based on expiry time.
+                // Auto-deactivate session when expired
+                if (sessionId) {
+                    deactivateQRSessions(subject.id, sessionDate || '', period).catch(err =>
+                        console.error('Failed to deactivate expired session:', err)
+                    );
+                }
             } else {
                 const minutes = Math.floor(diff / 60000);
                 const seconds = Math.floor((diff % 60000) / 1000);
@@ -108,11 +113,21 @@ export function QRAttendanceDialog({ subject, period, onSessionCreated }: QRAtte
     }, [expiresAt]);
 
     const handleStartSession = async () => {
+        // Validate expiry time
+        if (expiryMinutes < 1 || expiryMinutes > 120) {
+            toast({
+                title: 'เวลาไม่ถูกต้อง',
+                description: 'กรุณากำหนดเวลาหมดอายุระหว่าง 1-120 นาที',
+                variant: 'destructive'
+            });
+            return;
+        }
+
         setLoading(true);
         try {
             const now = new Date();
-            const dateStr = selectedDate; // Use selected date instead of current date
-            const expiry = new Date(now.getTime() + 10 * 60000); // 10 minutes from now
+            const dateStr = selectedDate;
+            const expiry = new Date(now.getTime() + expiryMinutes * 60000); // User-defined minutes
 
             // 1. Deactivate old sessions first
             await deactivateQRSessions(subject.id, dateStr, period);
@@ -146,7 +161,7 @@ export function QRAttendanceDialog({ subject, period, onSessionCreated }: QRAtte
 
             toast({
                 title: 'เริ่มการเช็คชื่อด้วย QR Code',
-                description: 'สแนก QR Code นี้เพื่อเช็คชื่อ (ใช้งานได้ 10 นาที)',
+                description: `สแนก QR Code นี้เพื่อเช็คชื่อ (ใช้งานได้ ${expiryMinutes} นาที)`,
             });
         } catch (error) {
             console.error('Failed to create QR session:', error);
@@ -204,6 +219,29 @@ export function QRAttendanceDialog({ subject, period, onSessionCreated }: QRAtte
                                     onChange={(e) => setSelectedDate(e.target.value)}
                                     className="bg-white"
                                 />
+                            </div>
+
+                            <div className="space-y-2 text-left bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+                                <Label htmlFor="expiry-time" className="text-sm font-bold flex items-center gap-2">
+                                    <Clock className="h-4 w-4 text-blue-600" />
+                                    เวลาที่ QR Code ใช้งานได้ (นาที)
+                                </Label>
+                                <div className="flex items-center gap-2">
+                                    <Input
+                                        id="expiry-time"
+                                        type="number"
+                                        min="1"
+                                        max="120"
+                                        value={expiryMinutes}
+                                        onChange={(e) => setExpiryMinutes(parseInt(e.target.value) || 10)}
+                                        className="bg-white font-bold text-lg"
+                                        placeholder="10"
+                                    />
+                                    <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">นาที</span>
+                                </div>
+                                <p className="text-xs text-blue-600">
+                                    เมื่อหมดเวลา QR Code จะไม่สามารถใช้งานได้ทันที
+                                </p>
                             </div>
 
                             <div className={`p-3 rounded-lg border text-sm flex items-center gap-3 ${locStatus === 'success' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-orange-50 border-orange-100 text-orange-700'}`}>

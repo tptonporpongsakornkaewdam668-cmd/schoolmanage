@@ -652,11 +652,11 @@ export default function SubjectDetailsPage() {
                                             const grade = calculateGrade(totalScore);
                                             return (
                                                 <tr key={item.student.id} className="border-b last:border-0 hover:bg-muted/5">
-                                                    <td className="px-4 py-3">{index + 1}</td> {/* Assuming 'number' maps to index + 1 */}
-                                                    <td className="px-4 py-3">{item.student.studentCode}</td> {/* Assuming 'studentId' maps to studentCode */}
-                                                    <td className="px-4 py-3">{item.student.fullName}</td> {/* Assuming 'name' maps to fullName */}
+                                                    <td className="px-4 py-3">{index + 1}</td>
+                                                    <td className="px-4 py-3">{item.student.studentCode}</td>
+                                                    <td className="px-4 py-3">{item.student.fullName}</td>
                                                     {assignments.map(asm => {
-                                                        const score = getScore(item.student.id, asm.id); // Using existing getScore
+                                                        const score = getScore(item.student.id, asm.id);
                                                         return (
                                                             <td key={asm.id} className="px-4 py-2 text-center">
                                                                 <Input
