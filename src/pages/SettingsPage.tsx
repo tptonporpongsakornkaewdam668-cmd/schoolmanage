@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Trash, Plus, Save, Loader2, Calendar as CalendarIcon } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from '@/contexts/AuthContext';
 import {
   getPeriodConfigs, savePeriodConfigs,
   getGradeConfigs, saveGradeConfigs,
@@ -27,6 +28,7 @@ export default function SettingsPage() {
   });
   const [admins, setAdmins] = useState<AppUser[]>([]);
   const [newAdmin, setNewAdmin] = useState({ name: '', username: '', password: '' });
+  const { currentUser } = useAuth();
   const [savingSettings, setSavingSettings] = useState(false);
   const [addingAdmin, setAddingAdmin] = useState(false);
 
@@ -134,6 +136,19 @@ export default function SettingsPage() {
   };
 
   if (loading) return <div className="flex justify-center p-8"><Loader2 className="animate-spin" /></div>;
+
+  if (currentUser?.role !== 'admin') {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 text-center space-y-4">
+        <div className="bg-red-50 p-6 rounded-full">
+          <Shield className="h-12 w-12 text-red-500" />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-800">ไม่มีสิทธิ์เข้าถึง</h2>
+        <p className="text-muted-foreground max-w-sm">เฉพาะผู้ดูแลระบบ (Admin) เท่านั้นที่สามารถจัดการการตั้งค่าระบบได้</p>
+        <Button onClick={() => window.history.back()} variant="outline">ย้อนกลับ</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">

@@ -95,7 +95,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const navItems = currentUser?.role === 'student' ? studentNavItems : teacherNavItems;
+  const navItems = currentUser?.role === 'student'
+    ? studentNavItems
+    : teacherNavItems.filter(item => {
+      if (item.path === '/settings' && currentUser?.role !== 'admin') return false;
+      return true;
+    });
 
   const navigate = (path: string) => {
     // We'll use Link's 'to' so no need for manual navigate here, but just in case
