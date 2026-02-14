@@ -102,7 +102,7 @@ export default function AttendanceHistoryPage() {
             {/* Filters */}
             <Card className="border-none shadow-sm">
                 <CardContent className="p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <Input
@@ -123,18 +123,20 @@ export default function AttendanceHistoryPage() {
                                 ))}
                             </SelectContent>
                         </Select>
-                        <Input
-                            type="date"
-                            placeholder="ตั้งแต่วันที่"
-                            value={startDate}
-                            onChange={e => setStartDate(e.target.value)}
-                        />
-                        <Input
-                            type="date"
-                            placeholder="ถึงวันที่"
-                            value={endDate}
-                            onChange={e => setEndDate(e.target.value)}
-                        />
+                        <div className="grid grid-cols-2 gap-2 lg:contents">
+                            <Input
+                                type="date"
+                                className="w-full"
+                                value={startDate}
+                                onChange={e => setStartDate(e.target.value)}
+                            />
+                            <Input
+                                type="date"
+                                className="w-full"
+                                value={endDate}
+                                onChange={e => setEndDate(e.target.value)}
+                            />
+                        </div>
                     </div>
                 </CardContent>
             </Card>
@@ -182,7 +184,7 @@ export default function AttendanceHistoryPage() {
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <Badge className={`${config.bgClass} h-6`}>
+                                            <Badge variant="outline" className={`${config.bgClass} h-6 text-black border-opacity-50`}>
                                                 {config.label}
                                             </Badge>
                                             {record.note && (

@@ -321,11 +321,12 @@ export default function ReportsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
             <div className="space-y-2">
               <label className="text-sm font-medium">วันที่</label>
               <Input
                 type="date"
+                className="w-full"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
               />
@@ -333,7 +334,7 @@ export default function ReportsPage() {
             <div className="space-y-2">
               <label className="text-sm font-medium">ห้องเรียน</label>
               <Select value={selectedClassroom} onValueChange={setSelectedClassroom}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="ทั้งหมด" />
                 </SelectTrigger>
                 <SelectContent>
@@ -347,13 +348,12 @@ export default function ReportsPage() {
             <div className="space-y-2">
               <label className="text-sm font-medium">วิชา</label>
               <Select value={selectedSubject} onValueChange={setSelectedSubject}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="ทั้งหมด" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">ทั้งหมด</SelectItem>
                   {subjects.map(s => {
-                    // Find classroom names for this subject
                     const roomNames = s.classrooms
                       ?.map(id => classrooms.find(c => c.id === id)?.name)
                       .filter(Boolean)
@@ -372,14 +372,15 @@ export default function ReportsPage() {
               <label className="text-sm font-medium">ค้นหา</label>
               <Input
                 placeholder="ชื่อ หรือ รหัสนักเรียน..."
+                className="w-full"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button variant="outline" onClick={clearFilters} className="w-full md:col-span-1">
+            <Button variant="outline" onClick={clearFilters} className="w-full">
               ล้างตัวกรอง
             </Button>
-            <Button variant="default" onClick={handleExport} className="w-full md:col-span-4 bg-green-600 hover:bg-green-700 text-white">
+            <Button variant="default" onClick={handleExport} className="w-full lg:col-span-3 bg-green-600 hover:bg-green-700 text-white">
               <Download className="mr-2 h-4 w-4" /> ส่งออก Excel (CSV)
             </Button>
           </div>
@@ -581,7 +582,7 @@ export default function ReportsPage() {
                                   </SelectContent>
                                 </Select>
                               ) : (
-                                <Badge variant="outline" className={`${statusInfo.bgClass} text-xs font-normal border-opacity-50`}>
+                                <Badge variant="outline" className={`${statusInfo.bgClass} text-xs font-bold text-black border-opacity-50`}>
                                   <span className={`mr-1.5 h-1.5 w-1.5 rounded-full inline-block ${statusInfo.dotClass}`}></span>
                                   {statusInfo.label}
                                 </Badge>
@@ -652,9 +653,9 @@ export default function ReportsPage() {
                 <Card key={key} className={`border-l-4 ${config.bgClass.replace('bg-', 'bg-opacity-30 ')}`} style={{ borderLeftColor: config.dotClass.replace('bg-', 'var(--') }}>
                   <CardContent className="p-6 flex flex-col items-center justify-center text-center">
                     <div className="text-3xl mb-3 p-2 bg-white rounded-full shadow-sm">{config.icon}</div>
-                    <h3 className="font-semibold text-lg">{config.label}</h3>
-                    <div className="text-4xl font-bold mt-2">{count}</div>
-                    <p className="text-xs text-muted-foreground mt-1 text-center bg-white/50 px-2 py-0.5 rounded-full">{percentage}%</p>
+                    <h3 className="font-bold text-lg text-black">{config.label}</h3>
+                    <div className="text-4xl font-bold mt-2 text-black">{count}</div>
+                    <p className="text-xs text-muted-foreground mt-1 text-center bg-white/50 px-2 py-0.5 rounded-full font-bold">{percentage}%</p>
                   </CardContent>
                 </Card>
               );

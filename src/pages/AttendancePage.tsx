@@ -287,7 +287,7 @@ export default function AttendancePage() {
                 </SelectContent>
               </Select>
 
-              <Input type="date" className="w-auto" value={date} onChange={(e) => setDate(e.target.value)} />
+              <Input type="date" className="w-full sm:w-[200px]" value={date} onChange={(e) => setDate(e.target.value)} />
             </>
           )}
         </CardContent>
@@ -302,7 +302,7 @@ export default function AttendancePage() {
             <div
               key={key}
               className={cn(
-                'flex items-center gap-2 rounded-lg border px-3 py-2 text-sm',
+                'flex items-center gap-2 rounded-lg border px-3 py-2 text-sm text-black font-bold',
                 config.bgClass
               )}
             >
@@ -363,7 +363,7 @@ export default function AttendancePage() {
                             className={cn(
                               'rounded-md border py-1.5 text-xs font-semibold sm:px-3 sm:py-1.5 sm:text-sm transition-all',
                               isActive
-                                ? `${btnConfig.bgClass} border-transparent ring-1 ring-primary/20 shadow-sm`
+                                ? `${btnConfig.bgClass} border-transparent ring-2 ring-primary/20 shadow-sm text-black`
                                 : 'border-border bg-background hover:bg-secondary'
                             )}
                           >
